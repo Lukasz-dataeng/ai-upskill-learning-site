@@ -1,0 +1,917 @@
+id: interview-prep
+title: AI Engineering Interview Preparation
+short_title: Interview Prep Handbook
+description: Interview-ready answers to the 44 questions covered by the AI Upskill program — RAG architecture, vector databases, model configuration, context management, and model selection. Each answer opens with a spoken-length summary, then the depth an interviewer will probe for.
+footer_note: <b>Model figures verified August 2026.</b> Context windows, prices and model lineups move fast — re-check vendor docs the week of your interview rather than quoting these numbers as gospel. Saying “roughly 1M tokens for the current frontier models, and I'd verify before designing around it” is a stronger answer than a confidently wrong figure.
+sections:
+  - id: s1
+    accent: s1
+    title: RAG Architecture
+    summary: How retrieval-augmented generation works, why it exists, and how it breaks in production.
+    nav_tag: pipeline, eval, failure modes
+    diagram: |-
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="a1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,1 L7,4 L0,7" fill="none" stroke="var(--tx3)" stroke-width="1.4"></path></marker></defs>
+            <!-- offline row -->
+            <text x="12" y="24" class="svg-s" style="font-weight:700;letter-spacing:.08em">OFFLINE — INDEXING</text>
+            <rect x="12" y="34" width="120" height="42" rx="9" class="svg-box"></rect><text x="72" y="60" class="svg-t" text-anchor="middle">Documents</text>
+            <rect x="172" y="34" width="120" height="42" rx="9" class="svg-box"></rect><text x="232" y="54" class="svg-t" text-anchor="middle">Chunk</text><text x="232" y="68" class="svg-s" text-anchor="middle">split + overlap</text>
+            <rect x="332" y="34" width="120" height="42" rx="9" class="svg-box"></rect><text x="392" y="54" class="svg-t" text-anchor="middle">Embed</text><text x="392" y="68" class="svg-s" text-anchor="middle">text → vector</text>
+            <rect x="492" y="34" width="140" height="42" rx="9" class="svg-box" stroke="var(--s2)"></rect><text x="562" y="54" class="svg-t" text-anchor="middle">Vector store</text><text x="562" y="68" class="svg-s" text-anchor="middle">HNSW index</text>
+            <path d="M132,55 L170,55" class="svg-arr" marker-end="url(#a1)"></path>
+            <path d="M292,55 L330,55" class="svg-arr" marker-end="url(#a1)"></path>
+            <path d="M452,55 L490,55" class="svg-arr" marker-end="url(#a1)"></path>
+            <!-- online row -->
+            <text x="12" y="128" class="svg-s" style="font-weight:700;letter-spacing:.08em">ONLINE — QUERY TIME</text>
+            <rect x="12" y="138" width="104" height="42" rx="9" class="svg-box"></rect><text x="64" y="164" class="svg-t" text-anchor="middle">User query</text>
+            <rect x="150" y="138" width="112" height="42" rx="9" class="svg-box"></rect><text x="206" y="158" class="svg-t" text-anchor="middle">Embed query</text><text x="206" y="172" class="svg-s" text-anchor="middle">same model</text>
+            <rect x="296" y="138" width="112" height="42" rx="9" class="svg-box" stroke="var(--s2)"></rect><text x="352" y="158" class="svg-t" text-anchor="middle">Retrieve top-k</text><text x="352" y="172" class="svg-s" text-anchor="middle">ANN search</text>
+            <rect x="442" y="138" width="104" height="42" rx="9" class="svg-box"></rect><text x="494" y="158" class="svg-t" text-anchor="middle">Rerank</text><text x="494" y="172" class="svg-s" text-anchor="middle">cross-encoder</text>
+            <rect x="580" y="138" width="112" height="42" rx="9" class="svg-box"></rect><text x="636" y="158" class="svg-t" text-anchor="middle">Augment prompt</text><text x="636" y="172" class="svg-s" text-anchor="middle">context + query</text>
+            <rect x="726" y="138" width="112" height="42" rx="9" class="svg-box" stroke="var(--s1)"></rect><text x="782" y="158" class="svg-t" text-anchor="middle">LLM generate</text><text x="782" y="172" class="svg-s" text-anchor="middle">+ citations</text>
+            <path d="M116,159 L148,159" class="svg-arr" marker-end="url(#a1)"></path>
+            <path d="M262,159 L294,159" class="svg-arr" marker-end="url(#a1)"></path>
+            <path d="M408,159 L440,159" class="svg-arr" marker-end="url(#a1)"></path>
+            <path d="M546,159 L578,159" class="svg-arr" marker-end="url(#a1)"></path>
+            <path d="M692,159 L724,159" class="svg-arr" marker-end="url(#a1)"></path>
+            <path d="M562,78 L562,120 L360,120 L360,136" class="svg-arr" stroke-dasharray="4 3" marker-end="url(#a1)"></path>
+            <text x="762" y="216" class="svg-s" text-anchor="middle">grounded answer</text>
+            <path d="M782,182 L782,200" class="svg-arr" marker-end="url(#a1)"></path>
+          </svg>
+    diagram_caption: 'The two halves of every RAG system: an offline indexing pipeline and an online query pipeline. They must share the same embedding model.'
+    tiers:
+      - name: Foundational
+        filter_value: Foundational
+        questions:
+          - id: '1.1'
+            question: Can you explain what Retrieval-Augmented Generation (RAG) is and walk me through its core workflow from user query to final response?
+            lead: RAG is a pattern where, instead of relying on what a model memorised during training, you retrieve relevant documents at query time and put them into the prompt so the model answers from evidence you control.
+            body: |-
+              <p>There are two pipelines. <strong>Offline (indexing):</strong> documents are loaded, cleaned, split into chunks, passed through an embedding model that turns each chunk into a dense vector, and written to a vector store alongside the original text and metadata.</p>
+              <p><strong>Online (query time):</strong></p>
+              <ol>
+                        <li>The user's query is embedded with the <em>same</em> model used at index time.</li>
+                        <li>The vector store runs an approximate nearest-neighbour search and returns the top-k most similar chunks.</li>
+                        <li>Optionally a reranker — usually a cross-encoder — rescores those candidates and keeps the best few.</li>
+                        <li>The surviving chunks are pasted into a prompt template alongside the question and an instruction like “answer only from the context; if the answer isn't there, say so.”</li>
+                        <li>The LLM generates the answer, ideally citing the chunk IDs it used.</li>
+                      </ol>
+              <p>The key insight to say out loud: <strong>RAG does not change the model's weights.</strong> It changes what is in the context window at inference time. That is why it is cheap to update — reindex a document and the system's knowledge changes instantly.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Don't describe RAG as "the model searches the internet." The model does no searching — your retrieval layer does, and the model only sees text you chose to hand it. Interviewers use this to check whether you understand where the boundary sits.</p></div>
+              <div class="terms"><span class="lbl">Say these words</span><span class="chip">chunking</span><span class="chip">embedding</span><span class="chip">top-k</span><span class="chip">ANN</span><span class="chip">reranker</span><span class="chip">grounding</span><span class="chip">citation</span></div>
+          - id: '1.2'
+            question: Why would you choose RAG instead of relying solely on a pre-trained LLM? What problem does it solve?
+            lead: A pre-trained LLM knows only what was in its training data, has no idea which parts it actually knows, and cannot cite anything. RAG fixes all three by grounding answers in retrievable, attributable source text.
+            body: |-
+              <p>Concretely it solves four problems:</p>
+              <dl class="kv">
+                        <dt>Knowledge cutoff</dt><dd>The model cannot know about your product launched last week, or last night's incident report. Retrieval supplies it.</dd>
+                        <dt>Private data</dt><dd>Your contracts, tickets and wiki were never in any public training set — and you don't want them there.</dd>
+                        <dt>Hallucination</dt><dd>Grounding in retrieved text plus an instruction to abstain measurably reduces fabricated answers, and gives you something to check the answer against.</dd>
+                        <dt>Attribution</dt><dd>You can show the user the source paragraph. In regulated domains this is often a hard requirement, not a nice-to-have.</dd>
+                      </dl>
+              <p>Compared with the alternatives: <strong>fine-tuning</strong> teaches style, format and task behaviour but is a poor and expensive way to inject facts — and you must retrain to update them. <strong>Long-context stuffing</strong> (dumping the whole corpus in the prompt) works for a few hundred pages but scales badly on cost, latency and attention quality. RAG is the option where knowledge updates are a database write.</p>
+              <div class="box tip"><b class="t">Strong closing line</b><p>“Fine-tuning changes how the model behaves; RAG changes what it knows. Most production systems eventually need a bit of both.”</p></div>
+          - id: '1.3'
+            question: What are the key components of a RAG pipeline, and how do they interact with each other?
+            lead: 'Seven components: ingestion, chunker, embedding model, vector store, retriever, reranker, and generator — plus an evaluation loop wrapped around the whole thing.'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Component</th><th>Job</th><th>Contract with its neighbours</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Ingestion / parsing</b></td><td>Load PDFs, HTML, tickets; strip boilerplate; extract tables</td><td>Emits clean text + metadata (source, date, permissions)</td></tr>
+                          <tr><td><b>Chunker</b></td><td>Split into retrievable units with overlap</td><td>Chunk size must fit the embedding model's window and leave room in the LLM's context</td></tr>
+                          <tr><td><b>Embedding model</b></td><td>Text → dense vector</td><td><span class="r">Must be identical at index and query time</span>, and its dimensionality fixes the store's schema</td></tr>
+                          <tr><td><b>Vector store</b></td><td>Persist vectors + payload, serve ANN search</td><td>Index type and metric (cosine / dot) must match how embeddings were trained</td></tr>
+                          <tr><td><b>Retriever</b></td><td>Turn a query into candidate chunks; apply metadata filters</td><td>Returns top-k (often 20–50) for the reranker to narrow</td></tr>
+                          <tr><td><b>Reranker</b></td><td>Cross-encoder rescoring of query+chunk pairs</td><td>High precision, high cost — runs on tens of candidates, not millions</td></tr>
+                          <tr><td><b>Generator (LLM)</b></td><td>Synthesise a grounded answer with citations</td><td>Needs low temperature and an explicit abstain instruction</td></tr>
+                        </tbody>
+                      </table></div>
+              <p>The interaction that matters most: <strong>quality is bounded by the weakest upstream stage.</strong> A frontier LLM cannot rescue a retriever that returned the wrong paragraph, and a great retriever cannot rescue a chunker that cut a table in half. That is why debugging starts at ingestion, not at the prompt.</p>
+      - name: Intermediate
+        filter_value: Intermediate
+        questions:
+          - id: '1.4'
+            question: How does the retrieval step in RAG differ from a traditional keyword-based search?
+            lead: Keyword search matches strings; vector search matches meaning. BM25 asks “which documents contain these tokens?”, dense retrieval asks “which chunks sit closest to this query in embedding space?”
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Keyword (BM25 / inverted index)</th><th>Dense vector retrieval</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Unit of match</b></td><td>Exact tokens, stemmed</td><td>Semantic proximity in ℝⁿ</td></tr>
+                          <tr><td><b>Handles synonyms</b></td><td><span class="r">No</span> — “car” ≠ “automobile”</td><td><span class="g">Yes</span> — that's the whole point</td></tr>
+                          <tr><td><b>Rare identifiers</b></td><td><span class="g">Excellent</span> — SKUs, error codes, names</td><td><span class="y">Weak</span> — rare tokens get smoothed away</td></tr>
+                          <tr><td><b>Explainability</b></td><td>You can see which terms matched</td><td>A similarity score with no human-readable reason</td></tr>
+                          <tr><td><b>Cost of index</b></td><td>Cheap, sparse</td><td>Embedding compute + memory-heavy index</td></tr>
+                        </tbody>
+                      </table></div>
+              <p>Two things follow. First, dense retrieval returns something for <em>every</em> query — there's no "no results". A low-relevance answer still comes back with a plausible-looking score, so you need a similarity threshold or a reranker to decide when to say "I don't know."</p>
+              <p>Second, and this is the answer interviewers want: <strong>in production you rarely pick one.</strong> Hybrid search runs both and fuses the rankings, because the two fail in opposite directions.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Claiming vector search is simply "better." A user searching for invoice <code>INV-2024-8871</code> or the error <code>ECONNRESET</code> is far better served by BM25. Saying so signals production experience.</p></div>
+          - id: '1.5'
+            question: What happens when the retrieved context is irrelevant or contradicts the model's training data? How would you handle that?
+            lead: Two distinct failures. Irrelevant context distracts the model into confidently wrong answers; contradictory context creates a conflict between parametric memory and retrieved evidence, and which one wins is not something you should leave to chance.
+            body: |-
+              <p><strong>Irrelevant context.</strong> Models are strongly biased toward using what they're given — a plausible-looking but wrong passage often produces a worse answer than no context at all. Mitigations:</p>
+              <ul>
+                        <li>Set a <strong>similarity floor</strong>; if nothing clears it, don't call the LLM with junk — return "no supporting information found."</li>
+                        <li>Add a <strong>reranker</strong> and keep only the top 3–5 after rescoring.</li>
+                        <li>Add a lightweight <strong>relevance grader</strong> (a cheap model that labels each chunk keep/discard) — this is the core idea behind Corrective RAG.</li>
+                        <li>Prompt explicitly: “If the context does not contain the answer, reply exactly: <code>Not found in the provided sources.</code>”</li>
+                      </ul>
+              <p><strong>Contradiction with training data.</strong> Decide the precedence rule deliberately and state it in the system prompt: for enterprise knowledge, retrieved documents should win, because they're current and authoritative. Then reinforce it structurally — put source, date and authority level in the context block, and instruct the model to prefer the most recent authoritative source and to <em>surface</em> the disagreement rather than silently pick a side.</p>
+              <div class="box tip"><b class="t">What they're really testing</b><p>Whether you know that "just tell it to use the context" is not enough on its own. The strong answer pairs a prompt-level rule with a retrieval-level filter and an evaluation metric (faithfulness) that catches regressions.</p></div>
+          - id: '1.6'
+            question: Can you describe the difference between naive RAG, advanced RAG, and modular RAG architectures?
+            lead: 'They''re three generations of the same idea: naive RAG is retrieve-then-read in a straight line; advanced RAG adds pre- and post-retrieval optimisation around that line; modular RAG breaks the line into reconfigurable components with routing and loops.'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Generation</th><th>Shape</th><th>Techniques</th><th>When it's enough</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Naive</b></td><td>Index → retrieve top-k → generate</td><td>Fixed chunk size, single dense retrieval, one prompt</td><td>Demos, small homogeneous corpora, first sprint</td></tr>
+                          <tr><td><b>Advanced</b></td><td>Same line, optimised at both ends</td><td><em>Pre:</em> query rewriting, HyDE, multi-query expansion, semantic/structure-aware chunking, metadata enrichment. <em>Post:</em> cross-encoder reranking, context compression, deduplication, ordering the best chunk first and last</td><td>Most real production systems</td></tr>
+                          <tr><td><b>Modular</b></td><td>A graph of swappable modules, possibly looping</td><td>Routers (vector vs SQL vs web), agentic/iterative retrieval, self-reflection and retry (Self-RAG), corrective retrieval fallbacks (CRAG), memory modules, multi-hop planning</td><td>Heterogeneous sources, multi-hop questions, agentic products</td></tr>
+                        </tbody>
+                      </table></div>
+              <p>The progression is driven by failure, not fashion. You move to advanced RAG when you discover retrieval is missing obviously relevant documents. You move to modular RAG when a single retrieval pass structurally cannot answer the question — “compare our 2024 and 2025 refund policy and tell me what changed” needs two retrievals and a comparison step.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Jumping straight to agentic RAG. Each loop multiplies latency and cost and adds new failure modes. The senior answer is: start naive, measure, and let the evaluation data justify each addition.</p></div>
+              <div class="terms"><span class="lbl">Name-drop</span><span class="chip">HyDE</span><span class="chip">multi-query</span><span class="chip">Self-RAG</span><span class="chip">CRAG</span><span class="chip">GraphRAG</span><span class="chip">context compression</span></div>
+      - name: Deep-dive
+        filter_value: Deep-Dive
+        questions:
+          - id: '1.7'
+            question: How would you evaluate the quality of a RAG system? What metrics would you use?
+            lead: Evaluate retrieval and generation separately, because they fail separately — then add end-to-end and operational metrics on top. If you only measure the final answer you cannot tell whether a bad answer came from bad retrieval or bad synthesis.
+            body: |-
+              <p><strong>Retrieval metrics</strong> (need a labelled set of query → relevant-chunk pairs):</p>
+              <ul>
+                        <li><strong>Recall@k</strong> — did the right chunk appear in the top k? Usually the single most important number; if recall is low, nothing downstream can save you.</li>
+                        <li><strong>Precision@k</strong> — how much of what you retrieved was noise.</li>
+                        <li><strong>MRR / nDCG@k</strong> — rank-aware: was the right chunk near the top, not just present.</li>
+                      </ul>
+              <p><strong>Generation metrics</strong> (typically LLM-as-judge, e.g. RAGAS-style):</p>
+              <ul>
+                        <li><strong>Faithfulness / groundedness</strong> — is every claim supported by the retrieved context? This is your hallucination detector.</li>
+                        <li><strong>Answer relevance</strong> — does it actually address the question asked.</li>
+                        <li><strong>Context precision / recall</strong> — bridges the two halves: was the useful context ranked highly and was all needed context present.</li>
+                        <li><strong>Citation accuracy</strong> — do the cited sources really contain the claim.</li>
+                      </ul>
+              <p><strong>Operational:</strong> p50/p95 latency by stage, cost per query, abstention rate, and — the one that matters commercially — human thumbs-up rate on real traffic.</p>
+              <div class="box tip"><b class="t">How to sound senior</b><p>“I'd build a golden set of 100–300 real questions with annotated source chunks, run it in CI on every prompt or index change, and treat a Recall@10 or faithfulness regression as a failing build. Offline eval gates the deploy; online feedback and abstention rate tell me whether the offline set still reflects reality.”</p></div>
+          - id: '1.8'
+            question: What are the failure modes of a RAG pipeline, and how would you debug them in production?
+            lead: 'Almost every RAG failure lands in one of six buckets, and you localise it by walking the pipeline backwards from the answer: check what was retrieved before you touch the prompt.'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>#</th><th>Failure mode</th><th>Symptom</th><th>Fix</th></tr></thead>
+                        <tbody>
+                          <tr><td>1</td><td><b>Missing content</b></td><td>Answer is wrong; correct chunk isn't in the index at all</td><td>Ingestion gaps, failed PDF parse, permissions filter too strict</td></tr>
+                          <tr><td>2</td><td><b>Retrieval miss</b></td><td>Chunk exists but isn't in top-k</td><td>Hybrid search, query rewriting, better embedding model, raise k then rerank</td></tr>
+                          <tr><td>3</td><td><b>Ranking failure</b></td><td>Right chunk retrieved but buried at rank 40</td><td>Add cross-encoder reranker; tune fusion weights</td></tr>
+                          <tr><td>4</td><td><b>Context loss</b></td><td>Right chunk in the prompt, ignored by the model</td><td>“Lost in the middle” — trim context, reorder best-first, compress</td></tr>
+                          <tr><td>5</td><td><b>Extraction / synthesis error</b></td><td>Answer contradicts the context it was given</td><td>Lower temperature, stricter prompt, stronger model, force citations</td></tr>
+                          <tr><td>6</td><td><b>Chunking damage</b></td><td>Half a table, an orphaned "it depends", a split sentence</td><td>Structure-aware splitting, overlap, parent-document retrieval</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>The debugging procedure:</strong> log every query with its retrieved chunk IDs, scores, final prompt, and answer — this is non-negotiable and is the difference between debugging and guessing. Then for a failing query: (a) is the answer in the corpus at all? (b) if yes, does it appear at any k up to 100? (c) if yes, is it in the final prompt after reranking and truncation? (d) if yes, it's a generation problem. Each "no" points at exactly one stage.</p>
+              <div class="box tip"><b class="t">Add if there's time</b><p>Mention silent regressions: an embedding model version bump, a document re-parse, or a chunk-size change can quietly wreck recall with no error anywhere. Version your index and pin your embedding model.</p></div>
+          - id: '1.9'
+            question: How would you handle a scenario where the user's query requires information from multiple retrieved chunks that may conflict with each other?
+            lead: First establish whether it's a real contradiction or just two documents from different points in time — most "conflicts" in enterprise corpora are versioning problems, and metadata solves them before the LLM ever sees the text.
+            body: |-
+              <p><strong>1. Prevent avoidable conflicts at index time.</strong> Every chunk carries <code>source</code>, <code>effective_date</code>, <code>version</code>, <code>authority_tier</code> and <code>status</code>. Deprecated policies get filtered out or down-weighted at retrieval, so the model never has to arbitrate between the 2023 and 2025 handbook.</p>
+              <p><strong>2. Deduplicate and cluster.</strong> Near-identical chunks waste context and amplify whichever version happens to be duplicated more. Collapse them, keeping the newest.</p>
+              <p><strong>3. Give the model an explicit resolution policy.</strong> Present each chunk with a labelled header (<code>[S3 | Policy Manual | v4 | 2025-06-01]</code>) and instruct: prefer the most recent authoritative source; if sources genuinely disagree on a material point, state both positions with their citations rather than silently choosing.</p>
+              <p><strong>4. For multi-hop questions, decompose.</strong> If the answer requires combining facts rather than choosing between them — "which of our EU customers is affected by the clause added in v4?" — a single retrieval pass is the wrong tool. Break the query into sub-questions, retrieve per sub-question, then synthesise.</p>
+              <p><strong>5. Surface, don't hide.</strong> Returning “Source A says 30 days, Source B (newer) says 14 days — I've used 14” is a better product outcome than a confident single number, and it's usually what a compliance stakeholder actually wants.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Suggesting the model should "average" or "pick the most common" answer. Majority voting across duplicated documents is how stale policies win. Recency plus authority beats frequency.</p></div>
+  - id: s2
+    accent: s2
+    title: Vector Databases
+    summary: Embeddings, index structures, the accuracy/speed/memory triangle, and hybrid retrieval at scale.
+    nav_tag: embeddings, ANN, hybrid search
+    diagram: |-
+      <svg viewBox="0 0 860 220" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,1 L7,4 L0,7" fill="none" stroke="var(--tx3)" stroke-width="1.4"></path></marker></defs>
+            <text x="130" y="18" class="svg-t" text-anchor="middle">Flat (brute force)</text>
+            <rect x="20" y="28" width="220" height="150" rx="10" class="svg-box"></rect>
+            <g fill="var(--tx3)"><circle cx="55" cy="60" r="3.5"></circle><circle cx="90" cy="85" r="3.5"></circle><circle cx="130" cy="55" r="3.5"></circle><circle cx="170" cy="95" r="3.5"></circle><circle cx="205" cy="65" r="3.5"></circle><circle cx="70" cy="130" r="3.5"></circle><circle cx="115" cy="150" r="3.5"></circle><circle cx="160" cy="135" r="3.5"></circle><circle cx="200" cy="150" r="3.5"></circle><circle cx="140" cy="105" r="3.5"></circle></g>
+            <circle cx="130" cy="103" r="6" fill="var(--s2)"></circle>
+            <g stroke="var(--s2)" stroke-width=".8" opacity=".55"><line x1="130" y1="103" x2="55" y2="60"></line><line x1="130" y1="103" x2="90" y2="85"></line><line x1="130" y1="103" x2="130" y2="55"></line><line x1="130" y1="103" x2="170" y2="95"></line><line x1="130" y1="103" x2="205" y2="65"></line><line x1="130" y1="103" x2="70" y2="130"></line><line x1="130" y1="103" x2="115" y2="150"></line><line x1="130" y1="103" x2="160" y2="135"></line><line x1="130" y1="103" x2="200" y2="150"></line><line x1="130" y1="103" x2="140" y2="105"></line></g>
+            <text x="130" y="198" class="svg-s" text-anchor="middle">compares every vector · 100% recall · O(N)</text>
+
+            <text x="430" y="18" class="svg-t" text-anchor="middle">IVF (cluster + probe)</text>
+            <rect x="320" y="28" width="220" height="150" rx="10" class="svg-box"></rect>
+            <g fill="none" stroke="var(--line2)" stroke-dasharray="3 3"><circle cx="375" cy="70" r="34"></circle><circle cx="480" cy="70" r="34"></circle><circle cx="375" cy="140" r="30"></circle><circle cx="480" cy="140" r="30"></circle></g>
+            <g fill="var(--tx3)"><circle cx="365" cy="62" r="3"></circle><circle cx="388" cy="80" r="3"></circle><circle cx="470" cy="60" r="3"></circle><circle cx="492" cy="82" r="3"></circle><circle cx="368" cy="145" r="3"></circle><circle cx="386" cy="132" r="3"></circle><circle cx="472" cy="148" r="3"></circle><circle cx="490" cy="133" r="3"></circle></g>
+            <circle cx="375" cy="70" r="34" fill="var(--s2)" opacity=".13"></circle>
+            <circle cx="378" cy="72" r="6" fill="var(--s2)"></circle>
+            <text x="430" y="198" class="svg-s" text-anchor="middle">searches nprobe clusters only · fast build · misses edges</text>
+
+            <text x="720" y="18" class="svg-t" text-anchor="middle">HNSW (layered graph)</text>
+            <rect x="600" y="28" width="240" height="150" rx="10" class="svg-box"></rect>
+            <text x="612" y="48" class="svg-s">L2</text><text x="612" y="98" class="svg-s">L1</text><text x="612" y="152" class="svg-s">L0</text>
+            <g stroke="var(--line2)" stroke-width="1"><line x1="650" y1="44" x2="790" y2="44"></line>
+              <line x1="645" y1="94" x2="705" y2="94"></line><line x1="705" y1="94" x2="760" y2="94"></line><line x1="760" y1="94" x2="805" y2="94"></line>
+              <line x1="640" y1="148" x2="672" y2="148"></line><line x1="672" y1="148" x2="704" y2="148"></line><line x1="704" y1="148" x2="736" y2="148"></line><line x1="736" y1="148" x2="768" y2="148"></line><line x1="768" y1="148" x2="800" y2="148"></line></g>
+            <g fill="var(--tx3)"><circle cx="650" cy="44" r="3.5"></circle><circle cx="790" cy="44" r="3.5"></circle>
+              <circle cx="645" cy="94" r="3"></circle><circle cx="705" cy="94" r="3"></circle><circle cx="760" cy="94" r="3"></circle><circle cx="805" cy="94" r="3"></circle>
+              <circle cx="640" cy="148" r="3"></circle><circle cx="672" cy="148" r="3"></circle><circle cx="704" cy="148" r="3"></circle><circle cx="736" cy="148" r="3"></circle><circle cx="768" cy="148" r="3"></circle><circle cx="800" cy="148" r="3"></circle></g>
+            <path d="M650,50 L705,88" class="svg-arr" stroke="var(--s2)" marker-end="url(#a2)"></path>
+            <path d="M705,100 L736,142" class="svg-arr" stroke="var(--s2)" marker-end="url(#a2)"></path>
+            <circle cx="736" cy="148" r="6" fill="var(--s2)"></circle>
+            <text x="720" y="198" class="svg-s" text-anchor="middle">coarse-to-fine hops · O(log N) · high recall, high RAM</text>
+          </svg>
+    diagram_caption: The three index families you will be asked to compare. Flat is exact and slow; IVF partitions the space; HNSW navigates a multi-layer proximity graph.
+    tiers:
+      - name: Foundational
+        filter_value: Foundational
+        questions:
+          - id: '2.1'
+            question: What is a vector database, and how is it fundamentally different from a traditional relational database?
+            lead: 'A vector database is built around one operation a relational database cannot do efficiently: find the k items whose high-dimensional embeddings are closest to a query vector. Relational databases answer “which rows match exactly?”; vector databases answer “which rows are most similar?”'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Relational DB</th><th>Vector DB</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Query type</b></td><td>Exact predicates, joins, ranges</td><td>k-nearest-neighbour by distance</td></tr>
+                          <tr><td><b>Index</b></td><td>B-tree, hash — 1-D ordered keys</td><td>HNSW graph, IVF lists, PQ codebooks</td></tr>
+                          <tr><td><b>Result</b></td><td>Deterministic set — a row matches or it doesn't</td><td>Ranked list with similarity scores; approximate by design</td></tr>
+                          <tr><td><b>Correctness bar</b></td><td>100% — exactness is the contract</td><td>Recall of ~95–99% traded for speed</td></tr>
+                          <tr><td><b>Scaling pain</b></td><td>Write throughput, join complexity</td><td>Memory footprint of the index; index rebuild cost</td></tr>
+                        </tbody>
+                      </table></div>
+              <p>The deeper reason B-trees don't work: they rely on a total ordering of one dimension. In 768 or 1536 dimensions there is no meaningful sort order, and classic spatial structures like KD-trees degenerate to brute force — the “curse of dimensionality.” So the field gave up on exactness and built approximate structures instead.</p>
+              <div class="box tip"><b class="t">Nuance worth adding</b><p>“Vector database” is increasingly a feature, not a product category — pgvector puts ANN indexes inside Postgres, and most warehouses and search engines now ship vector types. The interesting question is usually whether you need a dedicated system, not whether you need vectors.</p></div>
+          - id: '2.2'
+            question: Can you explain what an embedding is and how it is generated from raw text?
+            lead: An embedding is a fixed-length list of floats — typically 384 to 3072 dimensions — that represents the meaning of a piece of text, arranged so that texts with similar meaning end up close together geometrically.
+            body: |-
+              <p><strong>How it's produced:</strong> the text is tokenised, the tokens go through a transformer encoder, and the resulting per-token hidden states are pooled into a single vector — usually mean pooling or the <code>[CLS]</code> token. That vector is then normalised so cosine similarity reduces to a dot product.</p>
+              <p><strong>Why the geometry means anything</strong> is the part people skip: it's the training objective. Embedding models are trained contrastively — pull matched pairs (a question and its answer, a sentence and its paraphrase) together, push mismatched pairs apart, typically with InfoNCE loss over in-batch negatives. The geometry is <em>learned</em>, not inherent.</p>
+              <p>Three practical consequences:</p>
+              <ul>
+                        <li><strong>Similarity is model-specific.</strong> Two models' vectors are not comparable, even at the same dimensionality.</li>
+                        <li><strong>The training data defines "similar."</strong> A model trained on web Q&amp;A may cluster legal clauses badly; domain models exist for a reason.</li>
+                        <li><strong>Asymmetric tasks need asymmetric handling.</strong> Many models expect prefixes like <code>query:</code> / <code>passage:</code>; omitting them quietly costs you recall.</li>
+                      </ul>
+              <div class="terms"><span class="lbl">Terms</span><span class="chip">contrastive learning</span><span class="chip">mean pooling</span><span class="chip">cosine similarity</span><span class="chip">dimensionality</span><span class="chip">Matryoshka</span></div>
+          - id: '2.3'
+            question: Why do we store embeddings in vector databases rather than in standard databases?
+            lead: You <em>can</em> store them anywhere — a float array is just bytes. What you can't do in a standard database is search them fast, because there's no index that makes similarity search sublinear without a purpose-built ANN structure.
+            body: |-
+              <p>Put ten million 1536-dimension vectors in a plain table and every query becomes a full scan: ten million dot products of 1536 floats each. That's tens of gigabytes of memory bandwidth per query — hundreds of milliseconds to seconds, single-user. A vector index turns that into a few thousand comparisons and single-digit milliseconds.</p>
+              <p>Beyond the index, purpose-built stores give you things you'd otherwise build yourself:</p>
+              <ul>
+                        <li><strong>Filtered ANN</strong> — combining metadata predicates with similarity search without destroying recall (harder than it sounds; naive post-filtering can return nothing).</li>
+                        <li><strong>Quantization and compression</strong> — scalar/product/binary quantization to fit the index in RAM.</li>
+                        <li><strong>Hybrid scoring</strong> — built-in BM25 + dense fusion.</li>
+                        <li><strong>Operational tooling</strong> — sharding, replication, namespaces/multi-tenancy, live re-indexing.</li>
+                      </ul>
+              <div class="box tip"><b class="t">The answer that lands</b><p>“Below roughly a million vectors, pgvector in the database you already run is usually the right call — one less system, transactional consistency with your source rows. The argument for a dedicated vector DB is scale, filtered-search quality, and operational features, not the ability to store an array.”</p></div>
+      - name: Intermediate
+        filter_value: Intermediate
+        questions:
+          - id: '2.4'
+            question: What indexing strategies are used in vector databases (HNSW, IVF, Flat)? Explain the trade-offs.
+            lead: 'Every index is a point on the same triangle: recall, latency, and memory. Flat maximises recall, HNSW maximises speed at high recall but costs RAM, IVF is the memory-and-build-time compromise, and quantization is the lever you pull on any of them.'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Index</th><th>How it works</th><th>Recall</th><th>Speed</th><th>Memory</th><th>Use when</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Flat</b></td><td>Exhaustive scan, exact distances</td><td><span class="g">100%</span></td><td><span class="r">O(N)</span></td><td>Vectors only</td><td>&lt;100k vectors, or generating ground truth to measure other indexes</td></tr>
+                          <tr><td><b>IVF / IVF-PQ</b></td><td>k-means into <code>nlist</code> cells; search <code>nprobe</code> nearest cells</td><td><span class="y">Tunable via nprobe</span></td><td>Fast</td><td>Low (esp. with PQ)</td><td>Very large static corpora, memory-constrained, batch rebuilds acceptable</td></tr>
+                          <tr><td><b>HNSW</b></td><td>Multi-layer navigable small-world graph; greedy descent</td><td><span class="g">95–99%+</span></td><td><span class="g">O(log N)</span></td><td><span class="r">High</span> — graph edges often exceed vector size</td><td>Default for online RAG; incremental inserts needed</td></tr>
+                          <tr><td><b>ScaNN / DiskANN</b></td><td>Anisotropic quantization; graph on SSD</td><td>High</td><td>High</td><td>Disk-resident</td><td>Billion-scale where RAM is the binding cost</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>The knobs to name:</strong> HNSW has <code>M</code> (edges per node — more edges, better recall, more memory), <code>ef_construction</code> (build-time effort) and <code>ef_search</code> (query-time effort — the runtime recall/latency dial). IVF has <code>nlist</code> and <code>nprobe</code>. Being able to say “I'd fix M and ef_construction at build time and tune ef_search against a recall target measured on a Flat baseline” is what separates a read-about-it answer from a used-it answer.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Forgetting HNSW's weakness: deletes are soft (tombstones) and the graph degrades under heavy churn, so high-update workloads need periodic rebuilds. IVF also drifts as data distribution shifts away from the centroids it was trained on.</p></div>
+          - id: '2.5'
+            question: How does Approximate Nearest Neighbor (ANN) search work, and why is it preferred over exact search in production?
+            lead: ANN deliberately gives up the guarantee of finding the true nearest neighbours in exchange for sublinear search time — and it's the right trade because in RAG a 98%-correct neighbour list produces an indistinguishable answer at a fraction of the cost.
+            body: |-
+              <p><strong>The mechanism</strong> is always some form of "don't look at most of the data":</p>
+              <ul>
+                        <li><strong>Graph-based (HNSW):</strong> vectors become nodes connected to their neighbours across layers of decreasing sparsity. A search enters at the top layer, greedily hops toward the query, drops a layer, repeats. Long edges at the top cover distance; short edges at the bottom give precision. Roughly O(log N).</li>
+                        <li><strong>Partition-based (IVF):</strong> cluster the space once, then only scan the few cells nearest the query.</li>
+                        <li><strong>Hash-based (LSH):</strong> hash functions that collide for nearby vectors; check only the matching buckets.</li>
+                      </ul>
+              <p><strong>Why exact search loses:</strong> at 10M × 1536 dims, brute force is ~15 GFLOPs of dot products per query. That's fine offline, impossible at 100 QPS with a 50 ms budget. And the accuracy you're buying is largely illusory — the embedding itself is a lossy approximation of meaning, so insisting on the exact top-10 of an approximate representation is false precision.</p>
+              <div class="box tip"><b class="t">Show you'd measure it</b><p>“Recall isn't a vibe — I'd compute ground truth on a sample with a Flat index and tune <code>ef_search</code> until Recall@10 hits, say, 0.98, then check what that costs in p95 latency. That's a business decision, not a default.”</p></div>
+          - id: '2.6'
+            question: Which vector databases have you worked with? What were your criteria for selecting one over another?
+            lead: Answer this with a decision framework plus honest specifics — interviewers can tell instantly when someone lists six databases they've only read about. Name what you actually used, then show you know the landscape.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Option</th><th>Shape</th><th>Strength</th><th>Watch out for</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>pgvector</b></td><td>Postgres extension</td><td>No new infrastructure; joins and transactions with your real data; HNSW + quantization is enough for ~10M vectors</td><td>You inherit Postgres' scaling story; index builds are heavy</td></tr>
+                          <tr><td><b>Qdrant</b></td><td>Open-source, Rust</td><td>Best-in-class filtered search, strong hybrid, memory-efficient, easy self-host</td><td>Smaller ecosystem than Pinecone</td></tr>
+                          <tr><td><b>Pinecone</b></td><td>Managed SaaS</td><td>Zero ops, serverless scaling, mature RAG integrations</td><td>Cost at scale; vendor lock-in; data residency questions</td></tr>
+                          <tr><td><b>Weaviate</b></td><td>OSS + cloud</td><td>Built-in hybrid search, GraphQL, modules that embed for you</td><td>Heavier resource footprint</td></tr>
+                          <tr><td><b>Milvus</b></td><td>OSS, distributed</td><td>Genuinely billion-scale, many index types, GPU support</td><td>Complex — needs a platform team</td></tr>
+                          <tr><td><b>Chroma / FAISS</b></td><td>Embedded library</td><td>Fastest path to a prototype; FAISS is the research reference</td><td>Not a production database on their own</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>My selection criteria, in order:</strong> (1) scale and expected growth — under a million vectors, the answer is usually "the database you already have"; (2) filtering requirements, especially multi-tenant permission filters, where naive post-filtering silently destroys recall; (3) hybrid search support; (4) ops model — managed vs. self-hosted vs. a team that can run a distributed system; (5) data residency and compliance; (6) cost at projected QPS, not at demo scale.</p>
+              <div class="box tip"><b class="t">Honest framing that works</b><p>“I've run X in production and prototyped with Y. If I were starting today for &lt;10M vectors I'd default to pgvector, move to Qdrant when filtered-search quality or throughput demanded it, and only reach for Milvus at 100M+.”</p></div>
+      - name: Deep-dive
+        filter_value: Deep-Dive
+        questions:
+          - id: '2.7'
+            question: How would you handle embedding drift when your embedding model is updated but your vector store still contains old embeddings?
+            lead: You can't mix them. Vectors from two different models live in incomparable spaces, so a query embedded with v2 searched against a v1 index returns effectively random results — and it fails silently, with plausible-looking scores. The only correct answer is a full re-embed, executed as a versioned migration.
+            body: |-
+              <p><strong>The migration pattern:</strong></p>
+              <ol>
+                        <li><strong>Version everything.</strong> Every collection and every vector row carries <code>embedding_model</code> and <code>model_version</code>. Queries assert the version they expect and fail loudly on mismatch.</li>
+                        <li><strong>Build alongside, don't mutate.</strong> Create a new v2 collection and backfill it from the stored raw chunk text — which is why you keep the source text in the payload, not just the vector.</li>
+                        <li><strong>Evaluate before switching.</strong> Run the golden query set against v1 and v2. A newer model with better MTEB scores can still be worse on your domain; this step is not optional.</li>
+                        <li><strong>Shadow, then cut over.</strong> Serve from v1 while mirroring traffic to v2, compare retrieved sets and downstream answer quality, then flip behind a feature flag with a one-line rollback.</li>
+                        <li><strong>Retire v1</strong> after a bake period; keep the option to roll back until you're confident.</li>
+                      </ol>
+              <p><strong>Cost control:</strong> backfill in batches off-peak, prioritise hot documents, and use a queue so ingest of new documents continues writing to both collections during the transition.</p>
+              <div class="box trap"><b class="t">The distinction to draw</b><p>Separate <em>model change</em> drift (incompatible spaces — must re-embed) from <em>data drift</em> (the model is unchanged but your corpus vocabulary has moved — new products, new jargon). The second doesn't require re-embedding; it requires monitoring retrieval quality and possibly fine-tuning or swapping models. Interviewers love candidates who notice they're two different problems.</p></div>
+          - id: '2.8'
+            question: What strategies would you use to optimize retrieval relevance in a vector database at scale?
+            lead: 'Work the pipeline in order of leverage: representation first, then retrieval strategy, then ranking, then the index parameters. Tuning <code>ef_search</code> is the last thing I''d do, not the first — index tuning buys recall against your own embeddings, not relevance.'
+            body: |-
+              <p><strong>1 · Representation.</strong> Pick the embedding model empirically on your data, not from a leaderboard. Fix the chunking — structure-aware splits that respect headings, tables and code blocks, with overlap; prepend document title and section path to each chunk so a fragment carries its context. Consider parent-document retrieval: embed small precise chunks, return the larger parent for generation.</p>
+              <p><strong>2 · Retrieval strategy.</strong> Hybrid dense + BM25 fused with Reciprocal Rank Fusion. Query rewriting for conversational follow-ups ("what about the second one?" is meaningless as an embedding). Multi-query expansion for recall. Metadata pre-filtering to shrink the candidate space before scoring.</p>
+              <p><strong>3 · Ranking.</strong> Retrieve wide (k=50–100), rerank narrow (keep 3–8) with a cross-encoder. This is typically the single largest relevance gain available, because a cross-encoder sees query and passage jointly rather than comparing two independently-computed vectors. Add business-aware boosts: recency, authority, document type.</p>
+              <p><strong>4 · Index and infra.</strong> Now tune <code>ef_search</code>/<code>nprobe</code> against measured recall; quantize to fit in RAM; shard by tenant so filters become cheap; cache embeddings for repeated queries.</p>
+              <div class="box tip"><b class="t">Close with measurement</b><p>“All of this is guesswork without a golden set and offline eval in CI. I'd change one thing at a time and keep the Recall@k / nDCG deltas.”</p></div>
+          - id: '2.9'
+            question: How would you design a hybrid search system that combines vector similarity search with keyword-based filtering?
+            lead: 'Distinguish two things that both get called "hybrid": <strong>fusion</strong> of two ranked result sets (dense + sparse), and <strong>filtering</strong> by structured metadata. They''re different problems with different failure modes.'
+            body: |-
+              <p><strong>Fusion — combining BM25 and vector results.</strong> The scores aren't comparable (BM25 is unbounded, cosine is [-1,1]), so don't naively add them. Use <strong>Reciprocal Rank Fusion</strong>: score = Σ 1/(k + rank_i), typically k=60. It's rank-based, needs no score normalisation, and is remarkably hard to beat. If you do want weighted score fusion, normalise per-query (min-max over the returned set) and expose the weight as a tunable α — then tune α on your golden set, not by intuition.</p>
+              <p><strong>Filtering — the part that actually bites.</strong> Three strategies:</p>
+              <div class="tw"><table>
+                        <thead><tr><th>Strategy</th><th>How</th><th>Failure mode</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Post-filter</b></td><td>ANN first, drop non-matching results</td><td><span class="r">Empty or thin results</span> when the filter is selective — the top-100 may contain zero matches</td></tr>
+                          <tr><td><b>Pre-filter</b></td><td>Resolve the predicate, then brute-force within the subset</td><td>Slow when the subset is still large</td></tr>
+                          <tr><td><b>Filtered ANN</b></td><td>Predicate evaluated <em>during</em> graph traversal (Qdrant, Weaviate, Milvus)</td><td>Best of both; graph connectivity can degrade under very selective filters</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>The design I'd propose:</strong> permissions and tenancy as hard pre-filters (never post-filter security — it's a correctness and leak risk, and thin results are the least of it); soft attributes like recency and doc type as reranking boosts; dense + BM25 fused with RRF; cross-encoder rerank over the fused top-50; return top-5 with citations. Then measure each stage's contribution by ablation.</p>
+              <div class="terms"><span class="lbl">Terms</span><span class="chip">RRF</span><span class="chip">BM25</span><span class="chip">SPLADE</span><span class="chip">pre/post-filter</span><span class="chip">cross-encoder</span></div>
+  - id: s3
+    accent: s3
+    title: Model Configuration & Parameters
+    summary: What each sampling knob actually does to the probability distribution — and which one to touch when output goes wrong.
+    nav_tag: sampling, determinism
+    diagram: |-
+      <svg viewBox="0 0 860 230" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="a3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,1 L7,4 L0,7" fill="none" stroke="var(--tx3)" stroke-width="1.4"></path></marker></defs>
+            <text x="90" y="20" class="svg-t" text-anchor="middle">Raw logits</text>
+            <g fill="var(--tx3)">
+              <rect x="30" y="60" width="18" height="90" rx="3"></rect><rect x="54" y="82" width="18" height="68" rx="3"></rect>
+              <rect x="78" y="98" width="18" height="52" rx="3"></rect><rect x="102" y="112" width="18" height="38" rx="3"></rect>
+              <rect x="126" y="126" width="18" height="24" rx="3"></rect></g>
+            <line x1="24" y1="150" x2="152" y2="150" stroke="var(--line2)"></line>
+            <text x="90" y="168" class="svg-s" text-anchor="middle">next-token scores</text>
+
+            <path d="M162,105 L200,105" class="svg-arr" marker-end="url(#a3)"></path>
+            <text x="181" y="98" class="svg-s" text-anchor="middle">÷ T</text>
+
+            <text x="300" y="20" class="svg-t" text-anchor="middle">Temperature</text>
+            <g fill="var(--s3)" opacity=".85">
+              <rect x="215" y="52" width="16" height="98" rx="3"></rect><rect x="237" y="88" width="16" height="62" rx="3"></rect>
+              <rect x="259" y="110" width="16" height="40" rx="3"></rect><rect x="281" y="126" width="16" height="24" rx="3"></rect>
+              <rect x="303" y="138" width="16" height="12" rx="3"></rect></g>
+            <g fill="var(--s2)" opacity=".7">
+              <rect x="325" y="98" width="16" height="52" rx="3"></rect><rect x="347" y="104" width="16" height="46" rx="3"></rect>
+              <rect x="369" y="110" width="16" height="40" rx="3"></rect></g>
+            <line x1="209" y1="150" x2="392" y2="150" stroke="var(--line2)"></line>
+            <text x="265" y="168" class="svg-s" text-anchor="middle">T = 0.2 · peaked</text>
+            <text x="352" y="168" class="svg-s" text-anchor="middle">T = 1.4 · flat</text>
+
+            <path d="M402,105 L440,105" class="svg-arr" marker-end="url(#a3)"></path>
+
+            <text x="560" y="20" class="svg-t" text-anchor="middle">Top-K = 3</text>
+            <g fill="var(--s3)" opacity=".85"><rect x="490" y="60" width="18" height="90" rx="3"></rect><rect x="514" y="82" width="18" height="68" rx="3"></rect><rect x="538" y="98" width="18" height="52" rx="3"></rect></g>
+            <g fill="none" stroke="var(--bad)" stroke-width="1.2" stroke-dasharray="3 2">
+              <rect x="562" y="112" width="18" height="38" rx="3"></rect><rect x="586" y="126" width="18" height="24" rx="3"></rect></g>
+            <line x1="484" y1="150" x2="610" y2="150" stroke="var(--line2)"></line>
+            <text x="547" y="168" class="svg-s" text-anchor="middle">fixed count, ignores shape</text>
+
+            <text x="740" y="20" class="svg-t" text-anchor="middle">Top-P = 0.9</text>
+            <g fill="var(--s2)" opacity=".85"><rect x="668" y="60" width="18" height="90" rx="3"></rect><rect x="692" y="82" width="18" height="68" rx="3"></rect><rect x="716" y="98" width="18" height="52" rx="3"></rect><rect x="740" y="112" width="18" height="38" rx="3"></rect></g>
+            <g fill="none" stroke="var(--bad)" stroke-width="1.2" stroke-dasharray="3 2"><rect x="764" y="126" width="18" height="24" rx="3"></rect></g>
+            <line x1="662" y1="150" x2="790" y2="150" stroke="var(--line2)"></line>
+            <text x="726" y="168" class="svg-s" text-anchor="middle">cumulative mass, adapts</text>
+            <text x="430" y="208" class="svg-s" text-anchor="middle">Order of operations: logits → temperature → top-k → top-p → renormalise → sample</text>
+          </svg>
+    diagram_caption: Temperature reshapes the distribution; top-k and top-p truncate it. Penalties act on the logits before any of this.
+    tiers:
+      - name: Foundational
+        filter_value: Foundational
+        questions:
+          - id: '3.1'
+            question: What does the temperature parameter control in an LLM, and when would you set it low versus high?
+            lead: Temperature is a divisor applied to the logits before the softmax. It controls how sharply peaked the next-token probability distribution is — low temperature concentrates probability on the model's top candidates, high temperature flattens the distribution and lets unlikely tokens through.
+            body: |-
+              <p>Mathematically: <code>p_i = softmax(z_i / T)</code>. As T → 0 the distribution collapses onto the argmax (greedy decoding). At T = 1 you sample from the model's raw learned distribution. Above 1 you're deliberately flattening it.</p>
+              <div class="tw"><table>
+                        <thead><tr><th>Setting</th><th>Behaviour</th><th>Use for</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>0 – 0.2</b></td><td>Near-deterministic, repetitive, safe</td><td>RAG answers, classification, extraction, JSON/tool-call generation, code, SQL</td></tr>
+                          <tr><td><b>0.3 – 0.7</b></td><td>Slight variety, still coherent</td><td>Summarisation, chat assistants, rewriting</td></tr>
+                          <tr><td><b>0.8 – 1.2</b></td><td>Creative, surprising, occasionally incoherent</td><td>Brainstorming, fiction, marketing variants, synthetic data diversity</td></tr>
+                          <tr><td><b>&gt;1.5</b></td><td>Frequently degenerate</td><td>Rarely useful outside experiments</td></tr>
+                        </tbody>
+                      </table></div>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Saying "temperature 0 stops hallucination." It doesn't. It makes the model deterministically produce its most likely output — and if the most likely output is wrong, you now get the same wrong answer every time. Temperature controls variance, not truth. Grounding controls truth.</p></div>
+          - id: '3.2'
+            question: What is the max tokens parameter, and how does it affect the model's response?
+            lead: Max tokens is a hard ceiling on how many tokens the model may <em>generate</em>. It is not a length instruction — the model doesn't plan around it. When the limit is hit, generation stops mid-sentence and the API returns a <code>length</code> finish reason.
+            body: |-
+              <p>Three things to get right:</p>
+              <ul>
+                        <li><strong>It's output-only, but it competes with input.</strong> Input + output must fit the context window. Many APIs reserve the max-tokens budget up front, so an over-generous setting can cause a request to fail even though the actual answer would have been short.</li>
+                        <li><strong>It's a cost and latency cap, not a style control.</strong> To get short answers, instruct the model ("answer in two sentences") <em>and</em> set max tokens as a safety net. Relying on the cap alone gives you truncated garbage.</li>
+                        <li><strong>Always check the finish reason.</strong> A response truncated at the limit is a bug you should detect and handle — retry with a larger budget, or stream and continue — not silently ship. This is especially dangerous with JSON output, where truncation produces unparseable results.</li>
+                      </ul>
+              <p>Reasoning models add a wrinkle worth mentioning: thinking tokens consume the output budget before any visible text is produced, so a limit that was comfortable for a non-reasoning model can leave nothing for the actual answer.</p>
+              <div class="box tip"><b class="t">One-liner that shows care</b><p>“I set max tokens to roughly 1.5× the longest legitimate answer I've observed, log every <code>finish_reason == "length"</code>, and alert if that rate rises.”</p></div>
+      - name: Intermediate
+        filter_value: Intermediate
+        questions:
+          - id: '3.3'
+            question: Explain Top-P (nucleus sampling) and how it differs from Top-K. When would you use one over the other?
+            lead: Both truncate the candidate set before sampling. Top-K keeps a fixed number of tokens; Top-P keeps however many tokens are needed to reach a cumulative probability mass. The difference is that Top-P adapts to the shape of the distribution and Top-K doesn't.
+            body: |-
+              <p><strong>Worked example.</strong> Suppose the model is very confident — the top token has p = 0.92. With Top-K = 40 you've just admitted 39 tokens with a combined 8% probability, giving nonsense a chance it didn't earn. With Top-P = 0.9 the nucleus is a single token; you sample the obvious continuation. Now suppose the model is genuinely uncertain, with 200 tokens each around 0.4%. Top-K = 40 arbitrarily amputates a legitimate long tail; Top-P = 0.9 expands to include ~180 of them.</p>
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Top-K</th><th>Top-P (nucleus)</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Rule</b></td><td>Keep the K highest-probability tokens</td><td>Keep the smallest set whose cumulative p ≥ P</td></tr>
+                          <tr><td><b>Candidate count</b></td><td>Fixed</td><td>Varies per token</td></tr>
+                          <tr><td><b>Confident model</b></td><td><span class="r">Admits junk</span></td><td><span class="g">Narrows automatically</span></td></tr>
+                          <tr><td><b>Uncertain model</b></td><td><span class="r">Cuts valid options</span></td><td><span class="g">Widens automatically</span></td></tr>
+                          <tr><td><b>Typical values</b></td><td>20–50</td><td>0.9–0.95</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>Which to use:</strong> Top-P is the sensible default and is what most APIs expose. Top-K is useful as a hard safety cap on the tail, and some stacks apply both (K first, then P). The practical guidance most providers give — and a good line to repeat — is <strong>tune temperature or top-p, not both simultaneously</strong>, because you can't attribute the effect.</p>
+          - id: '3.4'
+            question: What are frequency and presence penalties? How do they influence repetition and diversity?
+            lead: Both subtract from the logits of tokens that have already appeared, discouraging repetition — but they differ in whether the penalty scales with how often the token appeared.
+            body: |-
+              <dl class="kv">
+                        <dt>frequency_penalty</dt><dd>Penalty <strong>proportional to the count</strong> of prior occurrences. A word used five times is penalised five times as hard as one used once. Targets verbatim loops and overused words.</dd>
+                        <dt>presence_penalty</dt><dd><strong>Flat penalty</strong> applied once a token has appeared at all, regardless of count. Pushes the model toward introducing new vocabulary and new topics.</dd>
+                      </dl>
+              <p>Typical ranges are −2.0 to 2.0, with useful values usually between 0.1 and 0.8. Rules of thumb: use a small <strong>frequency</strong> penalty when output degenerates into repeated phrases; use a small <strong>presence</strong> penalty when you want topical breadth, e.g. "give me 20 distinct ideas" where the model keeps circling the same three.</p>
+              <div class="box trap"><b class="t">Trap to avoid — this is the real answer</b><p>These penalties are blunt token-level instruments with no semantic awareness. Push them above ~1.0 and the model starts avoiding words it <em>needs</em>: technical terms, the subject's name, required JSON keys, recurring identifiers in code. In factual or structured-output tasks, high penalties actively cause errors. For most RAG and extraction workloads the right value is <strong>0</strong> — if you're seeing repetition there, fix the prompt or the retrieved context, not the sampler.</p></div>
+              <p>Note also that not every provider exposes both; some expose a single repetition penalty (a multiplicative variant common in open-source stacks), which is worth flagging if you're asked about portability across models.</p>
+          - id: '3.5'
+            question: How would you configure parameters differently for a creative writing task versus a factual Q&A system?
+            lead: 'They optimise for opposite properties: creative writing wants variance and surprise, factual Q&amp;A wants reproducibility and grounding. Almost every parameter moves in the opposite direction.'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Parameter</th><th>Factual Q&amp;A / RAG</th><th>Creative writing</th><th>Why</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>temperature</b></td><td>0 – 0.2</td><td>0.8 – 1.1</td><td>Reproducibility vs. surprise</td></tr>
+                          <tr><td><b>top_p</b></td><td>1.0 (let temperature do the work)</td><td>0.9 – 0.95</td><td>Trim the incoherent tail without flattening voice</td></tr>
+                          <tr><td><b>frequency_penalty</b></td><td>0</td><td>0.2 – 0.5</td><td>Facts need repeated terms; prose doesn't</td></tr>
+                          <tr><td><b>presence_penalty</b></td><td>0</td><td>0.2 – 0.6</td><td>Encourage new imagery and topics</td></tr>
+                          <tr><td><b>max_tokens</b></td><td>Tight — answers are short</td><td>Generous</td><td>Cost control vs. room to develop</td></tr>
+                          <tr><td><b>stop sequences</b></td><td>Often used for structure</td><td>Rare</td><td>Structured output needs boundaries</td></tr>
+                          <tr><td><b>seed</b></td><td>Set it</td><td>Leave unset</td><td>Regression testing vs. variety across generations</td></tr>
+                        </tbody>
+                      </table></div>
+              <p>Beyond sampling, the whole configuration differs. Factual Q&amp;A gets a strict system prompt with an abstain instruction, structured output / JSON schema enforcement, low top-k retrieval with citations, and a faithfulness check on the output. Creative writing gets a rich persona prompt, few-shot style examples, no schema, and human judgement instead of automated scoring.</p>
+              <div class="box tip"><b class="t">Bonus point</b><p>Mention generating <em>n</em> candidates at high temperature and selecting the best with a critic model — the creative-task equivalent of retrieval reranking.</p></div>
+      - name: Deep-dive
+        filter_value: Deep-Dive
+        questions:
+          - id: '3.6'
+            question: What is output determinism, and how would you achieve near-deterministic outputs in production?
+            lead: Determinism means identical inputs produce identical outputs. Note the word "near" in the question — that's deliberate, and acknowledging why full determinism is unattainable with a hosted model is the point of the question.
+            body: |-
+              <p><strong>What you control:</strong></p>
+              <ul>
+                        <li><code>temperature = 0</code> (greedy decoding) and a fixed <code>seed</code> where the provider supports one.</li>
+                        <li><strong>Pin the model version</strong> — <code>model-2026-05-01</code>, never a floating <code>-latest</code> alias. Silent model upgrades are the most common cause of "it changed and we didn't touch anything."</li>
+                        <li><strong>Freeze the prompt</strong>, and everything that composes it: template version, retrieved chunks, chunk order. In RAG this is the big one — non-deterministic retrieval makes the LLM's determinism irrelevant.</li>
+                        <li><strong>Constrain the output space</strong> — JSON schema / structured outputs / grammar-constrained decoding removes whole classes of variation.</li>
+                        <li><strong>Cache</strong> — for a genuinely fixed input, serving a cached response is exact determinism, and it's cheaper.</li>
+                      </ul>
+              <p><strong>Why residual non-determinism remains:</strong> floating-point addition isn't associative, so GPU kernel reductions vary with batch composition and hardware; providers batch requests from many tenants, so your numerics depend on who else is calling. Ties in the argmax then break differently, and a single divergent token cascades. Mixture-of-experts routing adds another batch-dependent source. Providers expose <code>system_fingerprint</code> precisely so you can detect when the backend configuration changed.</p>
+              <div class="box tip"><b class="t">How to close</b><p>“So I'd design for <em>stability</em> rather than bit-exactness: pin versions, constrain outputs, cache, and — most importantly — write tests that assert semantic properties (schema valid, correct field extracted, faithful to context) rather than exact string equality. String-equality tests against an LLM are flaky by construction.”</p></div>
+          - id: '3.7'
+            question: How do parameters like temperature interact with each other? Can conflicting settings cause unintended behaviour?
+            lead: 'Yes — they compose in a specific order, and several common combinations are either redundant or actively self-defeating. The pipeline is: logits → penalties → temperature scaling → top-k truncation → top-p truncation → renormalise → sample.'
+            body: |-
+              <p><strong>The interactions that matter:</strong></p>
+              <ul>
+                        <li><strong>Temperature 0 makes top-p and top-k inert.</strong> Greedy decoding picks the argmax; truncating a distribution you never sample from changes nothing. Setting <code>temperature=0, top_p=0.7</code> isn't wrong, it's just theatre — and it misleads the next engineer into thinking top_p is doing something.</li>
+                        <li><strong>High temperature + low top-p partially cancel.</strong> You flatten the distribution, then cut off the tail you just created. The result is more uniform sampling among a few candidates — not the same as either setting alone, and hard to reason about. This is why the standard advice is to tune one.</li>
+                        <li><strong>Low temperature + high penalties fight each other.</strong> The temperature says "be confident and consistent"; the penalty forcibly suppresses the confident token because it appeared before. In structured output this produces malformed JSON — the model is banned from repeating a key it needs.</li>
+                        <li><strong>Top-k and top-p together:</strong> the more restrictive one wins for that token, so the effective behaviour flips between them unpredictably as the distribution shape changes.</li>
+                        <li><strong>max_tokens interacts with everything downstream:</strong> higher temperature tends toward more rambling output, which hits the ceiling more often, which shows up as truncation bugs rather than as a sampling problem.</li>
+                      </ul>
+              <div class="box tip"><b class="t">The principle to state</b><p>“Change one parameter at a time, against a fixed eval set, and record the deltas. Most production configs I've seen with five tuned knobs are the residue of undocumented debugging, and half the settings do nothing.”</p></div>
+          - id: '3.8'
+            question: If a deployed model is producing inconsistent or hallucinated outputs, which parameters would you adjust first and why?
+            lead: I'd separate the two symptoms first, because they have different causes. Inconsistency is usually a sampling or version problem and parameters fix it. Hallucination is usually a grounding problem, and parameters barely touch it — so answering “lower the temperature” alone is the wrong answer here.
+            body: |-
+              <p><strong>For inconsistency — parameters first, in this order:</strong></p>
+              <ol>
+                        <li><code>temperature</code> → 0–0.2. Biggest single lever on variance.</li>
+                        <li>Check for a floating model alias; pin the version. Then check <code>system_fingerprint</code> for a silent backend change.</li>
+                        <li>Neutralise redundant knobs: <code>top_p = 1</code>, penalties = 0, so one thing controls variance.</li>
+                        <li>Set a <code>seed</code> if available; add structured output constraints.</li>
+                        <li>Verify the prompt is actually identical — retrieved chunks, chunk ordering, timestamps and conversation history injected into the template are common hidden sources of variation.</li>
+                      </ol>
+              <p><strong>For hallucination — parameters are step zero, not the fix:</strong></p>
+              <ol>
+                        <li>Drop temperature to near 0 and zero the penalties. Cheap, worth doing, rarely sufficient.</li>
+                        <li><strong>Inspect the retrieved context.</strong> Was the answer even in the prompt? Most "hallucinations" in RAG are retrieval failures wearing a disguise.</li>
+                        <li>Tighten the prompt: explicit abstain instruction, require citations per claim, clearly delimit the context block.</li>
+                        <li>Reduce noise: rerank and keep fewer, better chunks; irrelevant context increases fabrication.</li>
+                        <li>Add a verification pass — faithfulness scoring or a claim-checking step — and route low-confidence answers to abstention or a human.</li>
+                        <li>Consider a stronger model for the generation step; some are markedly better at declining to answer.</li>
+                      </ol>
+              <div class="box trap"><b class="t">The line that wins this question</b><p>“Temperature controls variance, not veracity. A hallucinating model at temperature 0 just hallucinates consistently.”</p></div>
+  - id: s4
+    accent: s4
+    title: Context Management
+    summary: Windows, token budgets, chunking, the lost-in-the-middle effect, and memory beyond a single conversation.
+    nav_tag: windows, chunking, memory
+    diagram: |-
+      <svg viewBox="0 0 860 250" xmlns="http://www.w3.org/2000/svg">
+            <text x="215" y="18" class="svg-t" text-anchor="middle">“Lost in the middle” retrieval accuracy</text>
+            <line x1="60" y1="200" x2="390" y2="200" stroke="var(--line2)"></line>
+            <line x1="60" y1="40" x2="60" y2="200" stroke="var(--line2)"></line>
+            <text x="48" y="46" class="svg-s" text-anchor="end">high</text>
+            <text x="48" y="200" class="svg-s" text-anchor="end">low</text>
+            <text x="70" y="216" class="svg-s">start</text>
+            <text x="225" y="216" class="svg-s" text-anchor="middle">position of the relevant fact</text>
+            <text x="380" y="216" class="svg-s" text-anchor="end">end</text>
+            <path d="M70,58 C120,72 150,150 225,155 C300,150 330,86 380,66" fill="none" stroke="var(--s4)" stroke-width="2.4"></path>
+            <circle cx="70" cy="58" r="4" fill="var(--s4)"></circle><circle cx="225" cy="155" r="4" fill="var(--s4)"></circle><circle cx="380" cy="66" r="4" fill="var(--s4)"></circle>
+            <text x="225" y="178" class="svg-s" text-anchor="middle" style="fill:var(--s4)">accuracy dips in the middle</text>
+
+            <text x="640" y="18" class="svg-t" text-anchor="middle">Context budget allocation</text>
+            <rect x="500" y="40" width="280" height="26" rx="5" fill="var(--card)" stroke="var(--line2)"></rect>
+            <rect x="500" y="40" width="52" height="26" rx="5" fill="var(--s1)" opacity=".75"></rect>
+            <text x="796" y="58" class="svg-s">system prompt</text>
+            <rect x="500" y="76" width="280" height="26" rx="5" fill="var(--card)" stroke="var(--line2)"></rect>
+            <rect x="500" y="76" width="150" height="26" rx="5" fill="var(--s2)" opacity=".75"></rect>
+            <text x="796" y="94" class="svg-s">retrieved context</text>
+            <rect x="500" y="112" width="280" height="26" rx="5" fill="var(--card)" stroke="var(--line2)"></rect>
+            <rect x="500" y="112" width="70" height="26" rx="5" fill="var(--s3)" opacity=".75"></rect>
+            <text x="796" y="130" class="svg-s">conversation history</text>
+            <rect x="500" y="148" width="280" height="26" rx="5" fill="var(--card)" stroke="var(--line2)"></rect>
+            <rect x="500" y="148" width="40" height="26" rx="5" fill="var(--s4)" opacity=".75"></rect>
+            <text x="796" y="166" class="svg-s">user query</text>
+            <rect x="500" y="184" width="280" height="26" rx="5" fill="var(--card)" stroke="var(--line2)" stroke-dasharray="4 3"></rect>
+            <rect x="500" y="184" width="96" height="26" rx="5" fill="var(--s5)" opacity=".55"></rect>
+            <text x="796" y="202" class="svg-s">reserved for output</text>
+            <text x="640" y="236" class="svg-s" text-anchor="middle">every section is a budget line — decide the split before you build the prompt</text>
+          </svg>
+    diagram_caption: 'Two things to internalise: attention is not uniform across position, and the window is a budget you allocate rather than a bucket you fill.'
+    tiers:
+      - name: Foundational
+        filter_value: Foundational
+        questions:
+          - id: '4.1'
+            question: What is a context window in the context of LLMs, and why does it matter?
+            lead: The context window is the maximum number of tokens a model can attend to in a single forward pass — system prompt, conversation history, retrieved documents, the user's question, and the generated output all share it. It is the model's entire working memory for that request.
+            body: |-
+              <p>Why it matters, in four directions:</p>
+              <ul>
+                        <li><strong>Capability.</strong> It bounds what the model can reason over at once — a 200-page contract, a whole codebase, a long support thread.</li>
+                        <li><strong>Statelessness.</strong> LLMs have no memory between calls. A multi-turn conversation feels continuous only because you resend the history every turn. The context window is therefore the hard limit on apparent memory.</li>
+                        <li><strong>Cost and latency.</strong> Attention cost grows quadratically with sequence length in the classic formulation, and you pay per input token. Prefill time scales with input size, so a large context directly increases time-to-first-token.</li>
+                        <li><strong>Quality.</strong> The advertised maximum is not the useful maximum. Performance typically degrades well before the limit, so "it fits" and "it works well" are different claims.</li>
+                      </ul>
+              <div class="box tip"><b class="t">Definition to be precise about</b><p>Tokens aren't words. Roughly 1 token ≈ 4 characters ≈ 0.75 English words; code, JSON and non-English text tokenise less efficiently. Quoting the ratio shows you've actually budgeted a prompt.</p></div>
+          - id: '4.2'
+            question: How do token limits vary across models you've worked with? Can you give approximate figures?
+            lead: Give tiers and ranges rather than precise numbers — they change every few months, and the strong answer signals that you know the difference between advertised and effective window size.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Tier</th><th>Approx. window</th><th>Representative models (mid-2026)</th><th>Typical use</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Small / local</b></td><td>4K – 32K</td><td>Small open-weight and older/embedded models</td><td>Edge, classification, cheap high-volume tasks</td></tr>
+                          <tr><td><b>Standard</b></td><td>128K – 200K</td><td>Claude Haiku 4.5 (200K); most mid-tier open models</td><td>Everyday RAG and chat — 200K ≈ a 400–500 page book</td></tr>
+                          <tr><td><b>Large</b></td><td>500K</td><td>Claude Opus 4.6–4.8, Sonnet 4.6</td><td>Whole-repository and multi-document work</td></tr>
+                          <tr><td><b>Frontier</b></td><td>~1M</td><td>Claude Sonnet 5 and Claude 4.6+ generally, plus the current GPT and Gemini flagships</td><td>Codebase-scale reasoning, long agentic sessions</td></tr>
+                          <tr><td><b>Headline</b></td><td>2M – 10M advertised</td><td>Gemini Pro long-context tiers; Llama 4 Scout (10M)</td><td>Mostly a marketing ceiling — quality is not demonstrated near the top</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>The two caveats that make this a good answer:</strong> first, most models deliver reliable quality at only roughly 60–70% of their stated maximum, so treat the number as a hard limit rather than a working target. Second, <strong>output limits are separate and much smaller</strong> than input limits — a model with a 1M input window may cap generation at a few tens of thousands of tokens.</p>
+              <div class="box tip"><b class="t">Say this</b><p>“I'd quote ranges rather than exact figures because they move quarterly — and in design reviews I check the vendor docs rather than trusting a remembered number. What I'd actually design around is the effective window, measured with a needle-in-a-haystack test on my own data.”</p></div>
+          - id: '4.3'
+            question: What happens when a user's input exceeds the model's maximum context length?
+            lead: The request fails — you get a hard API error (a context-length-exceeded 400), not a graceful degradation. The model cannot process the sequence at all, because positional and attention structures are defined only up to the trained length.
+            body: |-
+              <p>The important nuance is that <em>input + reserved output</em> must fit, so you can be rejected while the input alone is under the limit. And behaviour differs by layer:</p>
+              <ul>
+                        <li><strong>Raw API:</strong> immediate error. Clean, and preferable — it's visible.</li>
+                        <li><strong>Frameworks and chat products:</strong> often silently truncate the oldest messages or drop retrieved chunks. This is far more dangerous, because the system keeps answering while quietly forgetting the system prompt or the instruction that mattered.</li>
+                      </ul>
+              <p><strong>What I'd do about it:</strong> count tokens before sending, using the model's actual tokenizer rather than a character heuristic. Budget the window explicitly — a fixed reserve for the system prompt and output, then allocate what's left between retrieved context and history. When the budget is exceeded, degrade deliberately and log it: summarise older turns, drop the lowest-scoring chunks first, or fall back to a longer-context model. Never truncate blindly from the front, which is exactly how systems lose their safety instructions.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Saying "the model just forgets the earliest part." That's the framework's truncation policy talking, not the model. Attributing framework behaviour to the model is a common tell.</p></div>
+      - name: Intermediate
+        filter_value: Intermediate
+        questions:
+          - id: '4.4'
+            question: What strategies would you use for documents or conversations that exceed the context window?
+            lead: Match the strategy to the task, because the right answer differs for "answer a question about this document" versus "summarise the whole thing" versus "keep this conversation coherent."
+            body: |-
+              <p><strong>For long documents:</strong></p>
+              <ul>
+                        <li><strong>Retrieval (RAG)</strong> — the default for targeted questions. Don't read the document; retrieve the relevant few thousand tokens.</li>
+                        <li><strong>Map-reduce</strong> — for tasks that genuinely need the whole document (summarise, extract every clause of type X): process chunks independently, then combine.</li>
+                        <li><strong>Refine / iterative</strong> — carry a running answer through the chunks sequentially. Better for narrative coherence, worse for latency, and drifts over many steps.</li>
+                        <li><strong>Hierarchical summarisation</strong> — summarise sections, then summarise the summaries. Good for whole-corpus overviews; lossy by construction.</li>
+                      </ul>
+              <p><strong>For long conversations:</strong></p>
+              <ul>
+                        <li><strong>Sliding window</strong> — keep the last N turns verbatim. Simple, cheap, forgets abruptly.</li>
+                        <li><strong>Rolling summary + recent window</strong> — the workhorse: a compact running summary of everything older, plus the last few turns in full.</li>
+                        <li><strong>Retrieval over history</strong> — embed past turns and pull back only what's relevant now. Scales indefinitely.</li>
+                        <li><strong>Structured state</strong> — extract durable facts (user's name, constraints, decisions) into a small key–value store that's always injected, so they never fall out of the window.</li>
+                      </ul>
+              <p><strong>Cross-cutting:</strong> use prompt caching for the stable prefix (system prompt, long shared documents) — it cuts cost dramatically on repeated calls; compress retrieved context; and always leave headroom for the output.</p>
+          - id: '4.5'
+            question: How does chunking strategy affect the quality of information passed into the context window in a RAG pipeline?
+            lead: Chunking is the highest-leverage and most under-tuned decision in RAG. The chunk is simultaneously the unit of embedding, the unit of retrieval, and the unit of context — so a bad split degrades all three at once, and no downstream component can repair it.
+            body: |-
+              <p><strong>The core tension:</strong></p>
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Small chunks (~200 tokens)</th><th>Large chunks (~1500 tokens)</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Embedding quality</b></td><td><span class="g">Focused, one idea per vector</span></td><td><span class="r">Diluted — averaging many topics</span></td></tr>
+                          <tr><td><b>Retrieval precision</b></td><td><span class="g">High</span></td><td><span class="y">Lower — matches for the wrong reason</span></td></tr>
+                          <tr><td><b>Context sufficiency</b></td><td><span class="r">Fragments; answers get cut in half</span></td><td><span class="g">Self-contained</span></td></tr>
+                          <tr><td><b>Cost per query</b></td><td>Low, but you need more of them</td><td>High token spend, more noise in the window</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>What actually fixes it</strong> isn't finding a magic number — it's respecting structure. Split on semantic boundaries (headings, sections, paragraphs, function definitions), never mid-table or mid-sentence. Add 10–20% overlap so a fact spanning a boundary survives. Prepend the document title and heading path to every chunk so a retrieved fragment still knows what it's about. And consider <strong>parent-document / small-to-big retrieval</strong>: embed small precise chunks for matching, but hand the LLM the surrounding parent section — which resolves the tension rather than compromising on it.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Quoting "512 tokens with 50 overlap" as a rule. It's a reasonable starting point, not an answer. The right response is that chunk size is an empirical parameter you sweep against your golden set — and that the optimum for API reference docs, legal contracts and Slack threads are wildly different.</p></div>
+          - id: '4.6'
+            question: Difference between sliding window, hierarchical summarisation, and retrieval-based approaches to long contexts?
+            lead: 'They differ in what they throw away: sliding window discards by <em>age</em>, hierarchical summarisation discards by <em>detail</em>, and retrieval discards by <em>relevance</em>. That framing answers the question in one sentence — then compare.'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Sliding window</th><th>Hierarchical summarisation</th><th>Retrieval-based</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Mechanism</b></td><td>Keep the most recent N tokens/turns, drop the rest</td><td>Summarise chunks, then summarise summaries into a tree</td><td>Index everything; fetch only what's relevant to the current query</td></tr>
+                          <tr><td><b>Keeps</b></td><td>Recency, verbatim</td><td>Global gist</td><td>Query-relevant detail from anywhere</td></tr>
+                          <tr><td><b>Loses</b></td><td><span class="r">Anything older — abruptly</span></td><td><span class="r">Specifics; errors compound up the tree</span></td><td><span class="r">Anything retrieval misses; global overview</span></td></tr>
+                          <tr><td><b>Cost</b></td><td>Cheapest — no extra LLM calls</td><td>Expensive to build, cheap to reuse</td><td>Index cost + per-query search</td></tr>
+                          <tr><td><b>Latency</b></td><td>None added</td><td>High at build time</td><td>Low (single ANN lookup)</td></tr>
+                          <tr><td><b>Best for</b></td><td>Short chat sessions</td><td>“Summarise this 500-page report”</td><td>“What does clause 14.2 say?”</td></tr>
+                        </tbody>
+                      </table></div>
+              <p>The failure each one has: sliding windows forget a constraint the user set twenty turns ago; summarisation smooths away the exact number someone will later be held to; retrieval can't answer questions whose answer isn't localised in any chunk ("what's the overall tone of this contract?").</p>
+              <div class="box tip"><b class="t">The production answer</b><p>“In practice I'd combine them — a recent verbatim window for immediacy, a rolling summary for continuity, and retrieval over the full archive for specifics. Each covers the others' blind spot, and that hybrid is essentially what a good conversational memory system is.”</p></div>
+      - name: Deep-dive
+        filter_value: Deep-Dive
+        questions:
+          - id: '4.7'
+            question: How does the “lost in the middle” problem affect performance with long contexts, and how would you mitigate it?
+            lead: 'Models attend unevenly across position: accuracy at retrieving a fact from the context follows a U-shape, highest at the beginning and end and measurably worse in the middle. So a relevant document buried mid-prompt can be effectively invisible even though it''s technically there.'
+            body: |-
+              <p><strong>Why it happens:</strong> a mix of primacy from causal attention and positional encoding behaviour, recency bias, and training-data distribution — instructions typically appear at the start of documents and conclusions at the end, so the model learns those positions carry weight. The effect worsens as context length grows.</p>
+              <p><strong>Mitigations, roughly in order of impact:</strong></p>
+              <ol>
+                        <li><strong>Use less context.</strong> The most effective fix. Rerank aggressively and pass 3–5 excellent chunks instead of 20 mediocre ones — the U-curve barely matters when there's no middle.</li>
+                        <li><strong>Order strategically.</strong> Put the highest-scoring chunks first and last, weakest in the middle (sometimes called "lost-in-the-middle reordering"). Cheap and measurable.</li>
+                        <li><strong>Repeat the instruction at the end.</strong> Restate the question after the context block so it occupies a high-attention position.</li>
+                        <li><strong>Structure the context.</strong> Numbered, delimited chunks with headers and source labels make retrieval-within-the-prompt easier than an undifferentiated wall of text.</li>
+                        <li><strong>Compress.</strong> Extractive filtering of retrieved passages before they enter the prompt.</li>
+                        <li><strong>Decompose.</strong> For genuinely long material, several focused calls beat one enormous one — map-reduce sidesteps the problem entirely.</li>
+                      </ol>
+              <div class="box tip"><b class="t">Show you'd verify it</b><p>“I'd run a needle-in-a-haystack test on my own model and prompt format — insert a known fact at varying depths and measure recall. Vendors' long-context claims are benchmark results; the position curve for <em>your</em> prompt shape is an empirical question.”</p></div>
+          - id: '4.8'
+            question: What are the cost and latency implications of large context windows in production, and how would you optimise both?
+            lead: Cost scales roughly linearly with input tokens; latency is worse than linear because prefill attention scales quadratically with sequence length. A 10× bigger prompt costs about 10× more and adds disproportionately to time-to-first-token — and often produces a <em>worse</em> answer because of the middle-of-context effect.
+            body: |-
+              <p><strong>Where the money and milliseconds go:</strong></p>
+              <ul>
+                        <li><strong>Prefill</strong> — processing the input. Dominates TTFT and scales with prompt size.</li>
+                        <li><strong>Decode</strong> — generating tokens, roughly linear in output length, and where most of the wall-clock time goes for long answers.</li>
+                        <li><strong>KV cache memory</strong> — grows with sequence length and directly limits how many concurrent requests a served model can handle. On self-hosted infra this is the real constraint on throughput.</li>
+                      </ul>
+              <p><strong>Optimisations that actually move the numbers:</strong></p>
+              <ol>
+                        <li><strong>Prompt caching</strong> — the single biggest win for repeated stable prefixes. Cached reads are typically ~90% cheaper than fresh input tokens, so structure prompts with the static part (system prompt, long shared document, few-shot examples) first and the variable part last.</li>
+                        <li><strong>Retrieve less, rerank harder.</strong> Fewer, better chunks cut cost and improve quality simultaneously — the rare free lunch.</li>
+                        <li><strong>Route by difficulty.</strong> Send easy queries to a small cheap model, escalate only what needs a frontier model. Often a 5–10× blended cost reduction.</li>
+                        <li><strong>Stream</strong> — doesn't reduce total latency, but cuts perceived latency dramatically.</li>
+                        <li><strong>Cap and monitor</strong> — token budgets per request, plus dashboards on tokens-per-query and cost-per-resolved-question rather than raw spend.</li>
+                        <li><strong>Semantic caching</strong> of whole responses for repeated or near-duplicate questions.</li>
+                      </ol>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Treating a big context window as a replacement for RAG. "Just put everything in the prompt" is defensible at small scale and indefensible at 100 QPS — and it usually degrades accuracy too, so it fails on both axes at once.</p></div>
+          - id: '4.9'
+            question: How would you design a memory system for a multi-turn conversational AI that maintains coherence beyond a single context window?
+            lead: I'd design it as tiers with different lifetimes and different retrieval rules, modelled loosely on working / episodic / semantic memory — because "keep the last N turns" and "remember the user is vegetarian" are different problems that shouldn't share a mechanism.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Tier</th><th>Holds</th><th>Storage</th><th>Injection rule</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Working</b></td><td>Last 5–15 turns, verbatim</td><td>In the prompt</td><td>Always, until the budget runs out</td></tr>
+                          <tr><td><b>Episodic</b></td><td>Everything said in this and past sessions</td><td>Vector store, chunked by turn/topic with timestamps</td><td>Retrieved on relevance to the current message</td></tr>
+                          <tr><td><b>Semantic / profile</b></td><td>Durable facts: name, role, preferences, constraints, decisions</td><td>Structured key–value or small JSON doc</td><td>Always injected — small and high value</td></tr>
+                          <tr><td><b>Summary</b></td><td>Rolling compressed narrative of older turns</td><td>Text, regenerated periodically</td><td>Always injected, refreshed on a turn or token threshold</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>Write path:</strong> after each turn, an extraction step decides what is worth promoting from working memory into the profile — and, critically, handles <strong>updates and contradictions</strong>. "I moved to Berlin" must overwrite the old city, not sit alongside it. Every fact carries a timestamp, a source turn, and a confidence, so newer explicit statements win.</p>
+              <p><strong>Read path:</strong> assemble the prompt in a fixed budget — system prompt, profile, rolling summary, retrieved episodic snippets, recent turns verbatim, current message. Order matters: put durable instructions where attention is strongest.</p>
+              <p><strong>The hard parts to name</strong> — these are what the interviewer is listening for: forgetting and decay (memory that only grows becomes noise), contradiction resolution, privacy and deletion (a user must be able to say "forget that", and GDPR erasure has to reach the vector store too), and evaluation — you need tests for "does it remember X after 50 turns" and for false memories, which are worse than forgetting.</p>
+              <div class="terms"><span class="lbl">Terms</span><span class="chip">working memory</span><span class="chip">episodic</span><span class="chip">semantic memory</span><span class="chip">rolling summary</span><span class="chip">memory decay</span><span class="chip">right to erasure</span></div>
+  - id: s5
+    accent: s5
+    title: Model Differentiation
+    summary: 'Choosing between models: architecture families, proprietary vs. open weights, benchmarking, and quantization.'
+    nav_tag: trade-offs, quantization
+    diagram: |-
+      <svg viewBox="0 0 860 210" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="a5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,1 L7,4 L0,7" fill="none" stroke="var(--tx3)" stroke-width="1.4"></path></marker></defs>
+            <text x="130" y="20" class="svg-t" text-anchor="middle">Encoder-only</text>
+            <rect x="55" y="40" width="150" height="60" rx="10" class="svg-box" stroke="var(--s2)"></rect>
+            <text x="130" y="66" class="svg-t" text-anchor="middle">Bidirectional</text>
+            <text x="130" y="82" class="svg-s" text-anchor="middle">sees left + right</text>
+            <path d="M130,112 L130,132" class="svg-arr" marker-end="url(#a5)"></path>
+            <rect x="70" y="136" width="120" height="30" rx="8" class="svg-box"></rect>
+            <text x="130" y="156" class="svg-t" text-anchor="middle">label / vector</text>
+            <text x="130" y="188" class="svg-s" text-anchor="middle">BERT · embedding models · rerankers</text>
+
+            <text x="430" y="20" class="svg-t" text-anchor="middle">Decoder-only</text>
+            <rect x="355" y="40" width="150" height="60" rx="10" class="svg-box" stroke="var(--s5)"></rect>
+            <text x="430" y="66" class="svg-t" text-anchor="middle">Causal / masked</text>
+            <text x="430" y="82" class="svg-s" text-anchor="middle">sees only the left</text>
+            <path d="M430,112 L430,132" class="svg-arr" marker-end="url(#a5)"></path>
+            <rect x="370" y="136" width="120" height="30" rx="8" class="svg-box"></rect>
+            <text x="430" y="156" class="svg-t" text-anchor="middle">next token</text>
+            <text x="430" y="188" class="svg-s" text-anchor="middle">GPT · Claude · Llama · Mistral · Gemini</text>
+
+            <text x="720" y="20" class="svg-t" text-anchor="middle">Encoder–decoder</text>
+            <rect x="630" y="40" width="82" height="60" rx="10" class="svg-box" stroke="var(--s2)"></rect>
+            <text x="671" y="74" class="svg-t" text-anchor="middle">Encoder</text>
+            <rect x="734" y="40" width="82" height="60" rx="10" class="svg-box" stroke="var(--s5)"></rect>
+            <text x="775" y="74" class="svg-t" text-anchor="middle">Decoder</text>
+            <path d="M714,70 L732,70" class="svg-arr" marker-end="url(#a5)"></path>
+            <text x="723" y="60" class="svg-s" text-anchor="middle">cross-attn</text>
+            <path d="M775,112 L775,132" class="svg-arr" marker-end="url(#a5)"></path>
+            <rect x="715" y="136" width="120" height="30" rx="8" class="svg-box"></rect>
+            <text x="775" y="156" class="svg-t" text-anchor="middle">output sequence</text>
+            <text x="720" y="188" class="svg-s" text-anchor="middle">T5 · BART · translation models</text>
+          </svg>
+    diagram_caption: 'The attention mask is the real difference: bidirectional for understanding, causal for generation, both for sequence-to-sequence.'
+    tiers:
+      - name: Foundational
+        filter_value: Foundational
+        questions:
+          - id: '5.1'
+            question: What are the key differences between the GPT, Claude and Gemini families in terms of capabilities and use cases?
+            lead: At the frontier the capability gaps are narrower than the marketing suggests and they change with every release — so answer in terms of ecosystem, integration and durable design differences rather than claiming one is smarter.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>OpenAI (GPT)</th><th>Anthropic (Claude)</th><th>Google (Gemini)</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Reputation for</b></td><td>Broadest ecosystem, strong tool/function calling, large third-party tooling surface</td><td>Long-form reasoning, coding and agentic workflows, careful instruction-following, low-drama refusals</td><td>Native multimodality (video, audio, image) and very long context; deep GCP integration</td></tr>
+                          <tr><td><b>Deployment</b></td><td>OpenAI API + Azure OpenAI</td><td>Anthropic API, AWS Bedrock, Google Vertex</td><td>Vertex AI / Google Cloud</td></tr>
+                          <tr><td><b>Picks itself when</b></td><td>You want the widest library/SDK support</td><td>Long documents, code, agents, enterprise governance</td><td>You're on GCP, or the input is video/audio</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>Where genuine differences persist:</strong> input modalities supported natively; context window and effective long-context behaviour; the shape of tool-calling and structured-output APIs; safety and refusal behaviour, which materially affects some enterprise domains; data-residency and compliance options; and price per million tokens, which can differ severalfold for comparable quality.</p>
+              <div class="box tip"><b class="t">The framing that impresses</b><p>“I'd resist ranking them in the abstract. Published benchmarks saturate and leak; what I'd do is take 50–100 representative tasks from the actual product, run all three, and score on accuracy, latency, cost and failure mode. In my experience the ranking flips by task — and I'd build behind an abstraction layer so switching is a config change, not a rewrite.”</p></div>
+          - id: '5.2'
+            question: What is the difference between a proprietary model and an open-source model? What are the trade-offs?
+            lead: 'Proprietary models are served to you through an API — you rent capability. Open-weight models give you the weights to run yourself — you own the deployment and everything that comes with it. Note the terminology point: most "open-source" LLMs are <strong>open-weight</strong>; the training data and code usually aren''t released, and licences vary.'
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Proprietary (API)</th><th>Open-weight (self-hosted)</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Capability ceiling</b></td><td><span class="g">Highest available</span></td><td>Close behind, and closing</td></tr>
+                          <tr><td><b>Cost model</b></td><td>Per token — scales with usage, zero fixed cost</td><td>Fixed GPU cost — cheap per token at high, steady volume</td></tr>
+                          <tr><td><b>Data control</b></td><td>Data leaves your perimeter (contractual protections)</td><td><span class="g">Never leaves — VPC or on-prem</span></td></tr>
+                          <tr><td><b>Customisation</b></td><td>Prompting, limited fine-tuning</td><td><span class="g">Full fine-tuning, LoRA, quantization, custom decoding</span></td></tr>
+                          <tr><td><b>Ops burden</b></td><td><span class="g">None</span></td><td><span class="r">GPUs, serving stack, scaling, on-call</span></td></tr>
+                          <tr><td><b>Version stability</b></td><td>Vendor may deprecate or silently update</td><td><span class="g">Frozen forever — full reproducibility</span></td></tr>
+                          <tr><td><b>Latency floor</b></td><td>Network + shared queue</td><td>Controllable; can co-locate</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>The crossover logic:</strong> API models win on time-to-market, spiky traffic and frontier capability. Self-hosting wins on strict data residency, very high steady volume, heavy customisation, or a need for reproducibility. The break-even is genuinely a spreadsheet exercise — a GPU costs the same whether it's busy or idle, so utilisation is the deciding variable.</p>
+              <div class="box tip"><b class="t">Common production answer</b><p>“Hybrid: a small open model self-hosted for high-volume classification, routing and extraction, and a frontier API model for the hard reasoning tail. That usually beats either pure strategy on blended cost.”</p></div>
+          - id: '5.3'
+            question: How would you decide which LLM to use for a given business use case?
+            lead: I'd work backwards from the constraints that can disqualify a model outright, then benchmark only the survivors on real tasks. Starting from "which model is best?" is the wrong direction — most decisions are settled by requirements, not by leaderboard position.
+            body: |-
+              <p><strong>Step 1 — hard constraints (these eliminate candidates):</strong> data residency and compliance; whether data may leave the perimeter at all; required modalities; latency SLA; maximum acceptable cost per request; licence terms for commercial use.</p>
+              <p><strong>Step 2 — task requirements:</strong> what does the task actually demand? Extraction and classification need accuracy and structured output, not reasoning depth. Agentic workflows need reliable tool calling. Long-document analysis needs effective long context. Match the requirement, not the reputation.</p>
+              <p><strong>Step 3 — build a task-specific evaluation.</strong> 50–200 real examples with expected outputs, scored automatically where possible plus human review of a sample. Run every surviving candidate, including a small cheap one — you will often find a model a tenth of the price is indistinguishable on your task.</p>
+              <p><strong>Step 4 — score on the full picture:</strong> quality, p95 latency, cost per 1,000 requests at projected volume, failure modes (does it fail loudly or plausibly?), rate limits and availability, and switching cost.</p>
+              <p><strong>Step 5 — design for change.</strong> Abstract the provider behind an interface, keep prompts versioned and portable, and re-run the eval when new models ship. The right model in six months is probably not today's.</p>
+              <div class="box trap"><b class="t">Trap to avoid</b><p>Defaulting to the biggest model "to be safe." That's how teams end up paying frontier prices for sentiment classification. The senior instinct is to start with the cheapest model that could plausibly work and escalate only where the eval says you must.</p></div>
+      - name: Intermediate
+        filter_value: Intermediate
+        questions:
+          - id: '5.4'
+            question: What are the architectural differences between encoder-only, decoder-only, and encoder-decoder transformers? Give examples.
+            lead: The difference reduces to the attention mask and the training objective. Encoders attend bidirectionally and are trained to <em>understand</em>; decoders attend causally and are trained to <em>continue</em>; encoder-decoders do both and are trained to <em>transform</em> one sequence into another.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Encoder-only</th><th>Decoder-only</th><th>Encoder–decoder</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Attention</b></td><td>Bidirectional — every token sees all others</td><td>Causal mask — token <em>i</em> sees only 1…<em>i</em></td><td>Bidirectional encoder + causal decoder joined by cross-attention</td></tr>
+                          <tr><td><b>Objective</b></td><td>Masked language modelling</td><td>Next-token prediction</td><td>Span corruption / seq2seq</td></tr>
+                          <tr><td><b>Output</b></td><td>Representations — a vector or a label</td><td>Generated text</td><td>A transformed output sequence</td></tr>
+                          <tr><td><b>Examples</b></td><td>BERT, RoBERTa, DeBERTa; <b>embedding models and cross-encoder rerankers</b></td><td>GPT, Claude, Llama, Mistral, Gemini, Qwen — essentially all modern chat LLMs</td><td>T5, FLAN-T5, BART, mT5; classical NMT</td></tr>
+                          <tr><td><b>Can it generate?</b></td><td><span class="r">No</span></td><td><span class="g">Yes</span></td><td><span class="g">Yes</span></td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>Why decoder-only won</strong> is a good thing to be able to explain: it's a single stack, so it scales more simply; every token is a training signal, making pre-training data-efficient; the KV cache makes autoregressive inference efficient; and in-context learning turned out to make explicit task-specific architectures unnecessary — you just prompt.</p>
+              <div class="box tip"><b class="t">Connect it back to RAG</b><p>This isn't trivia — your RAG stack uses all three families' descendants. The <em>embedding model</em> and the <em>cross-encoder reranker</em> are encoder-style; the <em>generator</em> is decoder-only. Saying that out loud ties Section 5 to Sections 1 and 2 and reads as real understanding.</p></div>
+          - id: '5.5'
+            question: When would you choose a smaller, fine-tuned model over a large general-purpose model?
+            lead: When the task is narrow, high-volume and well-specified. A fine-tuned 7B model can match or beat a frontier model on a single task at a fraction of the cost and latency — the frontier model's advantage is breadth, and on a narrow task you're paying for breadth you don't use.
+            body: |-
+              <p><strong>Choose the small fine-tuned model when:</strong></p>
+              <ul>
+                        <li><strong>The task is stable and repetitive</strong> — classification, entity extraction, routing, structured parsing, tone rewriting, moderation.</li>
+                        <li><strong>Volume is high.</strong> Millions of calls a day is where per-token pricing hurts and a fixed GPU cost wins.</li>
+                        <li><strong>Latency matters.</strong> A small model on your own hardware can be an order of magnitude faster to first token.</li>
+                        <li><strong>You have labelled data</strong> — ideally a few thousand examples, which you can bootstrap by distilling from a frontier model.</li>
+                        <li><strong>Data can't leave your perimeter</strong>, or you need the exact same weights available in five years.</li>
+                        <li><strong>Output format must be rigid</strong> — fine-tuning is very effective at locking in a schema, and it also shortens prompts, since the instructions are baked into the weights.</li>
+                      </ul>
+              <p><strong>Stay with the large general model when</strong> the task space is open-ended, requirements change weekly, you lack training data, reasoning depth is the actual product, or volume is low enough that engineering time dwarfs inference cost.</p>
+              <div class="box tip"><b class="t">The pattern to name</b><p>“Prototype with the frontier model to prove the task is solvable and to generate labelled data; distil into a small fine-tuned model once the spec stabilises; keep an escalation path to the big model for the hard tail. And try prompt engineering and few-shot first — fine-tuning adds a training and evaluation pipeline you have to maintain forever.”</p></div>
+          - id: '5.6'
+            question: How do instruction-tuned models differ from base models, and when is each appropriate?
+            lead: A base model is a raw next-token predictor trained on unlabelled text — ask it a question and it may well continue with more questions, because that's what documents do. An instruction-tuned model has been post-trained on instruction–response pairs (SFT) and usually aligned with preference optimisation (RLHF/DPO) so it treats input as a request to fulfil.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Base / pretrained</th><th>Instruction-tuned (-Instruct / -Chat)</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Training</b></td><td>Next-token prediction on a large corpus</td><td>+ SFT on instruction pairs, + RLHF/DPO alignment</td></tr>
+                          <tr><td><b>Behaviour on “Explain photosynthesis”</b></td><td>May continue with a list of similar exam questions</td><td>Explains photosynthesis</td></tr>
+                          <tr><td><b>Chat template</b></td><td>None — plain text completion</td><td>Expects a specific role/turn format; <span class="r">using the wrong template degrades quality badly</span></td></tr>
+                          <tr><td><b>Safety behaviour</b></td><td>Essentially none</td><td>Trained refusals and guardrails</td></tr>
+                          <tr><td><b>Best for</b></td><td>Your own fine-tuning starting point; research; pure text completion; measuring raw capability</td><td>Practically every application — chat, RAG, agents, tools</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>The practical rule:</strong> if you're building a product, use the instruction-tuned variant. Reach for the base model only when you intend to do your own substantial fine-tuning — starting from base avoids inheriting another team's alignment and formatting habits, and gives you a cleaner canvas for a heavily domain-specific model.</p>
+              <div class="box trap"><b class="t">Detail that signals hands-on experience</b><p>Mention the chat template. Silently formatting prompts incorrectly for an instruct model — wrong special tokens, missing system role — is one of the most common causes of "this open model is terrible," and it's a formatting bug, not a model quality issue.</p></div>
+      - name: Deep-dive
+        filter_value: Deep-Dive
+        questions:
+          - id: '5.7'
+            question: Compare the performance trade-offs between a small open model (e.g. Mistral 7B), a mid-size open model (e.g. Llama 3/4) and a frontier API model for a cost-sensitive enterprise application.
+            lead: Frame it as three cost structures, not three quality levels — and lead with the observation that for a cost-sensitive application the right architecture is usually a router across all three, not a single choice.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th></th><th>Small open (~7B)</th><th>Mid/large open (~70B+ or MoE)</th><th>Frontier API</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>Quality</b></td><td>Good on narrow tasks, weak multi-step reasoning</td><td>Strong on most enterprise tasks</td><td><span class="g">Best, especially on the hard tail</span></td></tr>
+                          <tr><td><b>Cost shape</b></td><td>Fixed GPU; cheapest per token at volume — can run on a single mid-range GPU quantized</td><td>Fixed but substantial GPU footprint; needs real utilisation to pay off</td><td>Pure per-token; zero fixed cost</td></tr>
+                          <tr><td><b>Latency</b></td><td><span class="g">Lowest, self-hosted</span></td><td>Moderate</td><td>Network-bound; variable under load</td></tr>
+                          <tr><td><b>Ops</b></td><td>Modest</td><td><span class="r">Serious — multi-GPU serving, scaling</span></td><td><span class="g">None</span></td></tr>
+                          <tr><td><b>Data residency</b></td><td><span class="g">Full control</span></td><td><span class="g">Full control</span></td><td>Contractual</td></tr>
+                          <tr><td><b>Best role</b></td><td>Classification, extraction, routing, guardrails, high-volume simple turns</td><td>The main workhorse when volume is steady and data must stay in-house</td><td>Hard reasoning, low-volume high-value queries, rapid iteration</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>The economics to state explicitly:</strong> a self-hosted GPU costs the same whether it serves one request or a million, so self-hosting only wins above a utilisation threshold — and that threshold is a real calculation involving GPU-hour price, tokens/second throughput, and the vendor's per-million-token rate. Below it, the API is cheaper <em>and</em> better. Above it, self-hosting can be several times cheaper. Add engineering time honestly: an ML platform engineer costs more than a lot of API tokens.</p>
+              <div class="box tip"><b class="t">The recommendation to give</b><p>“Start entirely on the API to establish quality and gather real traffic. Instrument which queries are actually easy. Then move the high-volume easy segment to a small self-hosted model behind a confidence-based router, keeping the frontier model for escalation. That typically cuts blended cost several-fold without a measurable quality loss — and I'd prove that with an A/B, not an assumption.”</p></div>
+          - id: '5.8'
+            question: What factors would you evaluate when benchmarking two competing LLMs for a specific production task?
+            lead: Public benchmarks are close to useless for this decision — they're saturated, subject to training-set contamination, and measure tasks that aren't yours. I'd build a task-specific evaluation set and treat the comparison as an experiment with controls.
+            body: |-
+              <p><strong>Quality:</strong> accuracy against a golden set of 100–300 real examples; task-appropriate metrics (exact match for extraction, faithfulness and citation accuracy for RAG, pass@1 for code, LLM-as-judge with a human-validated rubric for open-ended text). Report <em>distributions</em>, not just means — a model that's usually great and occasionally catastrophic may be worse for you than a consistent one.</p>
+              <p><strong>Reliability:</strong> structured-output validity rate, tool-call correctness, instruction adherence, refusal rate on legitimate requests, and behaviour under adversarial or malformed input. Crucially: <em>how</em> does it fail — loudly, or with a confident wrong answer?</p>
+              <p><strong>Performance:</strong> p50/p95/p99 latency and time-to-first-token measured at realistic concurrency, not single-request; throughput; rate limits and observed availability.</p>
+              <p><strong>Cost:</strong> cost per completed task (not per token — a chattier model with cheaper tokens can lose), including retries and failed attempts. Model prompt-cache savings if the workload has a stable prefix.</p>
+              <p><strong>Fairness of the comparison — this is where candidates slip:</strong> prompts must be optimised for each model separately. Handing model B a prompt tuned for model A and declaring B worse is the most common benchmarking error. Fix sampling parameters, run multiple trials per example to measure variance, use held-out data neither model was tuned on, and blind the human raters.</p>
+              <div class="box tip"><b class="t">Close with the operational point</b><p>“And I'd keep the harness — it becomes the regression suite that tells me whether next quarter's model is actually an upgrade.”</p></div>
+          - id: '5.9'
+            question: How does quantization (GGUF, INT8, INT4) affect model performance, accuracy, and deployment feasibility?
+            lead: Quantization stores weights at lower numerical precision — 16-bit floats down to 8 or 4 bits — which shrinks the model roughly proportionally. Since LLM inference is memory-bandwidth-bound rather than compute-bound, smaller weights mean both a smaller footprint and faster generation, at some accuracy cost.
+            body: |-
+              <div class="tw"><table>
+                        <thead><tr><th>Precision</th><th>Size, 7B model</th><th>Typical quality impact</th><th>Notes</th></tr></thead>
+                        <tbody>
+                          <tr><td><b>FP16 / BF16</b></td><td>~14 GB</td><td>Baseline</td><td>Standard training/serving precision</td></tr>
+                          <tr><td><b>INT8</b></td><td>~7 GB</td><td><span class="g">Near-negligible</span></td><td>Safe default; widely supported</td></tr>
+                          <tr><td><b>INT4</b></td><td>~3.5 GB</td><td><span class="y">Small but real</span> — worst on reasoning, math, long-context and rare knowledge</td><td>Where consumer-hardware deployment becomes possible</td></tr>
+                          <tr><td><b>Below 4-bit</b></td><td>&lt;3 GB</td><td><span class="r">Noticeable degradation</span></td><td>Research/extreme-constraint territory</td></tr>
+                        </tbody>
+                      </table></div>
+              <p><strong>Terminology to keep straight</strong> — a common differentiator: <strong>GGUF</strong> is a <em>file format</em> (the llama.cpp ecosystem) that happens to package quantized weights at various levels like Q4_K_M or Q8_0, and it supports CPU and hybrid CPU/GPU offload. <strong>INT8/INT4</strong> are precisions. <strong>GPTQ</strong> and <strong>AWQ</strong> are post-training quantization <em>methods</em> for GPU serving; <strong>QLoRA</strong> is fine-tuning on a quantized base. Conflating the format with the precision is the mistake to avoid.</p>
+              <p><strong>Deployment consequences:</strong> a 70B model at INT4 fits on a single 48 GB GPU instead of needing multiple cards — that's the difference between a feasible and infeasible deployment, and it's usually the actual motivation. It also frees VRAM for a bigger KV cache, which raises concurrency.</p>
+              <div class="box tip"><b class="t">The judgement call to state</b><p>“Given a fixed memory budget, a larger model quantized to 4-bit usually beats a smaller model at full precision. But quantization damage is task-dependent — I'd evaluate the quantized model on my own task rather than trusting a perplexity delta, because perplexity can look fine while multi-step reasoning quietly degrades.”</p></div>
+              <div class="terms"><span class="lbl">Terms</span><span class="chip">GGUF</span><span class="chip">GPTQ</span><span class="chip">AWQ</span><span class="chip">QLoRA</span><span class="chip">KV cache</span><span class="chip">memory-bandwidth-bound</span></div>

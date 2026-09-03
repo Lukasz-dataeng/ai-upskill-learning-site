@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{PAGE_TITLE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<div class="wrap">
+
+<aside class="side">
+  <div class="brand">AI Upskill Program<span>{{BRAND_SUBTITLE}}</span></div>
+  <nav class="navsec" id="nav">
+{{NAV_LINKS}}
+  </nav>
+  <div class="sidebox">
+    <h4>Study progress</h4>
+    <div class="prog"><i id="bar"></i></div>
+    <div class="progtxt"><span id="pdone">0</span> of {{TOTAL_QUESTIONS}} marked confident</div>
+  </div>
+  <div class="sidebox">
+    <h4>How to use this</h4>
+    <div style="font-size:12.3px;color:var(--tx2)">
+      Read the question, answer it out loud first, <em>then</em> open the card. The bold opening line of each answer is the 15-second version — lead with it, expand only if asked.
+    </div>
+  </div>
+  <div class="sidebox">
+    <h4>All decks</h4>
+    <div style="font-size:12.3px"><a href="/">&larr; Back to deck index</a></div>
+  </div>
+</aside>
+
+<main class="main">
+
+<div class="hero">
+  <h1>{{HERO_TITLE}}</h1>
+  <p>{{HERO_DESC}}</p>
+  <div class="stats">
+    <div class="stat"><b>{{STAT_QUESTIONS}}</b><span>Questions</span></div>
+    <div class="stat"><b>{{STAT_SECTIONS}}</b><span>Sections</span></div>
+    <div class="stat"><b>{{STAT_TIERS}}</b><span>Depth tiers</span></div>
+    <div class="stat"><b>{{STAT_TABLES_DIAGRAMS}}</b><span>Tables &amp; diagrams</span></div>
+  </div>
+</div>
+
+<div class="tools">
+  <input class="search" id="q" type="search" placeholder="Search questions and answers…" autocomplete="off">
+{{FILTER_BUTTONS}}
+  <button class="btn" id="expand">Expand all</button>
+  <button class="btn" id="theme">◐ Theme</button>
+</div>
+
+<div id="content">
+{{SECTIONS_HTML}}
+</div>
+
+<div class="empty hide" id="empty">No questions match that search.</div>
+
+<footer>
+{{FOOTER_NOTE}}
+</footer>
+
+</main>
+</div>
+
+<script src="/assets/app.js"></script>
+</body>
+</html>
