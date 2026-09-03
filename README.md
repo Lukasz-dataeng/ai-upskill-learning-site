@@ -32,6 +32,37 @@ The original page tangled two things together: the *content* (which questions, w
 - **A generator** that combines the two into a static site — plain HTML/CSS/JS, no framework, so it stays cheap to host and fast to load regardless of how many topics pile up.
 - **A publish step** that carries a topic from "written" to "live" without manual hosting work getting in the way each time a topic changes.
 
+On disk, that split looks like this:
+
+```
+.
+├── data/                     one YAML file per topic
+│   └── <topic>.yaml
+├── template/                 the shared interactive shell — topic-agnostic
+│   ├── shell.html
+│   ├── styles.css
+│   └── app.js
+├── scripts/
+│   ├── build.mjs             data + template → a static site, checked against the schema
+│   └── publish.sh            build, commit, push, deploy, confirm it's live — one call
+├── specs/site-generator/
+│   └── spec.md                the content schema and the generator's contract, written down
+├── .claude/skills/
+│   └── publish-content/      turns "here's a topic" into a single request
+└── dist/                     generated output — disposable, never hand-edited
+```
+
+Nothing about a new topic touches `template/` or `scripts/` — it's purely a new file under `data/`. That's the constraint the whole layout is designed around.
+
+## Stack
+
+- **Node.js** runs the generator — a small build script, not a framework. Nothing to compile, nothing to configure beyond what's in `package.json`.
+- **YAML** (`js-yaml`) is the content format — readable to write by hand, and more forgiving of long multi-line prose than JSON would be.
+- **Plain HTML/CSS/JS** is what gets generated — no frontend framework. The interactivity (search, filtering, confidence tracking, theming) is small enough that one hasn't been worth the weight.
+- **Cloudflare Pages** is where a topic ends up live, deployed through its CLI (`wrangler`) rather than its dashboard — the point being that publishing stays a command, not a series of clicks.
+- **Git / GitHub** is the source of truth — every topic is a tracked file, so what's live is always exactly what's in the repo.
+- **EPAM DIAL**, eventually, for drafting answers to bare questions through an actual LLM service instead of ad hoc — the one piece still missing before "any topic" is fully hands-off.
+
 ## How it works
 
 The flow, start to finish:
