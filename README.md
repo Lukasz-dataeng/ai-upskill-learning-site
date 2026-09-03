@@ -32,7 +32,7 @@ Deploying is one command, fully non-interactive given `CLOUDFLARE_API_TOKEN` + `
 npx wrangler pages deploy dist --project-name=ai-upskill-learning-site
 ```
 
-To add a topic: drop a new `data/<deck>.yaml` following the schema below, `npm run build`, then the deploy command above. That whole loop — content in, agent builds, agent deploys, confirms the live URL — is meant to become a single Claude Code request; see [Status](#status).
+To add a topic by hand: drop a new `data/<deck>.yaml` following the schema below, `npm run build`, then the deploy command above — or run `scripts/publish.sh "message"` after staging your changes, which does build+commit+push+deploy+verify in one call. Handing the source content to Claude Code instead invokes [`.claude/skills/publish-content`](.claude/skills/publish-content/SKILL.md), which does the whole loop — including turning raw content into the schema — in one request.
 
 ### The schema
 
@@ -63,5 +63,5 @@ The first deck (`interview-prep`, 44 questions extracted from an original hand-b
 - [x] Verified locally (search, filters, checkboxes, theme toggle all match the source)
 - [x] Public GitHub repo: [Lukasz-dataeng/ai-upskill-learning-site](https://github.com/Lukasz-dataeng/ai-upskill-learning-site)
 - [x] Cloudflare Pages project, first live deploy — fully automated via `wrangler`, no dashboard step: **https://ai-upskill-learning-site.pages.dev**
-- [ ] `.claude/skills/publish-content/` — package the loop above as one repeatable Claude Code skill
+- [x] [`.claude/skills/publish-content/`](.claude/skills/publish-content/SKILL.md) — the loop above as one repeatable Claude Code skill, tested by using it to publish itself
 - [ ] Answer-generation hook wired to an EPAM DIAL endpoint, for decks that start as bare questions
