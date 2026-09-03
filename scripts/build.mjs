@@ -181,10 +181,16 @@ function renderFilterButtons(deck) {
   return buttons.join("\n");
 }
 
-function renderDeckPage(deck) {
+function renderDeckPage(deck, { showIndexLink }) {
   const shell = readFileSync(path.join(templateDir, "shell.html"), "utf8");
   const stats = deckStats(deck);
   const sectionsHtml = deck.sections.map(renderSection).join("\n");
+  const deckIndexLink = showIndexLink
+    ? `  <div class="sidebox">
+    <h4>All decks</h4>
+    <div style="font-size:12.3px"><a href="/">&larr; Back to deck index</a></div>
+  </div>`
+    : "";
 
   const replacements = {
     PAGE_TITLE: `${deck.title} · AI Upskill`,
@@ -200,6 +206,7 @@ function renderDeckPage(deck) {
     FILTER_BUTTONS: renderFilterButtons(deck),
     SECTIONS_HTML: sectionsHtml,
     FOOTER_NOTE: deck.footer_note ? `  <p>${deck.footer_note}</p>` : "",
+    DECK_INDEX_LINK: deckIndexLink,
   };
 
   return Object.entries(replacements).reduce(
@@ -258,14 +265,25 @@ mkdirSync(path.join(distDir, "assets"), { recursive: true });
 copyFileSync(path.join(templateDir, "styles.css"), path.join(distDir, "assets", "styles.css"));
 copyFileSync(path.join(templateDir, "app.js"), path.join(distDir, "assets", "app.js"));
 
+// A single deck needs no separate landing page to click through — it IS the
+// site. Once a second deck shows up in data/, this automatically switches
+// back to a real index page listing all of them; nothing to toggle by hand.
+const singleDeck = decks.length === 1;
+
 for (const deck of decks) {
   const deckDir = path.join(distDir, deck.id);
   mkdirSync(deckDir, { recursive: true });
-  writeFileSync(path.join(deckDir, "index.html"), renderDeckPage(deck), "utf8");
+  const page = renderDeckPage(deck, { showIndexLink: !singleDeck });
+  writeFileSync(path.join(deckDir, "index.html"), page, "utf8");
+  if (singleDeck) writeFileSync(path.join(distDir, "index.html"), page, "utf8");
   const stats = deckStats(deck);
   console.log(`✓ ${deck.id}: ${stats.questions} questions, ${stats.sections} sections → dist/${deck.id}/index.html`);
 }
 
-writeFileSync(path.join(distDir, "index.html"), renderIndexPage(decks), "utf8");
-console.log(`✓ dist/index.html (${decks.length} deck${decks.length === 1 ? "" : "s"} listed)`);
+if (singleDeck) {
+  console.log(`✓ dist/index.html (single deck served directly at the site root)`);
+} else {
+  writeFileSync(path.join(distDir, "index.html"), renderIndexPage(decks), "utf8");
+  console.log(`✓ dist/index.html (${decks.length} decks listed)`);
+}
 console.log(`\nBuild complete: ${decks.length} deck(s) → ${path.relative(root, distDir)}/`);
