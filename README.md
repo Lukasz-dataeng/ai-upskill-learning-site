@@ -1,67 +1,44 @@
 # AI Upskill Learning Site
 
-**The workflow:** hand over a deck of questions and answers as YAML, get back a fast, interactive, self-quizzing static site. Content in, deployable site out — the same shell, styling, search, and confidence-tracking every time, with a new topic costing one data file instead of another hand-built page.
+## Where this started
 
-> Status: live. **https://ai-upskill-learning-site.pages.dev**
+I wanted a way to actually prepare for an AI-engineering interview — not another wall of text, something I'd actually use: search through it, track which answers I could give confidently, quiz myself before the real thing. So I vibecoded one — sat down with an AI assistant and iterated on a single page until it did what I wanted: topic sections, a search box, expandable answers, checkboxes for what I'd already nailed. No plan beyond "build the thing" — just describing what I wanted and refining it until it felt right.
 
----
+It worked, for that one topic. But the moment I need to prep for something else — a different interview, a different subject entirely — hand-building another page from scratch, one prompt at a time, is the only option I'd have.
+
+## What this is for
+
+Turning that one-off into something reusable: **a repeatable way to generate and publish a self-quiz site for any topic I need to prepare for**, not just the original interview questions. Same experience every time — search, filtering, confidence tracking, a clean interactive layout — without redoing the hand-crafted-page work per topic.
+
+The shape of it: hand over what I want to study — a full set of questions and answers I've already written, or just the questions themselves — and get back a live, shareable site for it. The tenth topic should cost the same one request as the first.
+
+## How it's structured
+
+The original page tangled two things together: the *content* (which questions, which answers) and the *presentation* (the search, the layout, the interactivity). Pulling those apart is the whole design:
+
+- **Content** — one file per topic, in a plain structured format: questions grouped by section and difficulty, each with a short answer and a longer one.
+  ```yaml
+  sections:
+    - title: "..."
+      tiers:
+        - name: Foundational
+          questions:
+            - question: "..."
+              lead: "..."   # the short version
+              body: "..."   # the rest
+  ```
+  Human-writable and assistant-writable equally — it shouldn't matter whether I typed a topic's content myself or handed over raw notes to be structured.
+- **A shared template** — the interactive shell every topic gets: navigation, search, difficulty filters, expandable cards, the confidence tracker, a light/dark theme. One template, reused across every topic, not rebuilt per topic.
+- **A generator** that combines the two into a static site — plain HTML/CSS/JS, no framework, so it stays cheap to host and fast to load regardless of how many topics pile up.
+- **A publish step** that carries a topic from "written" to "live" without manual hosting work getting in the way each time a topic changes.
 
 ## How it works
 
-![Architecture: data/*.yaml and template/ feed into build.mjs, which validates and renders dist/, deployed to Cloudflare Pages. A dashed future path shows bare questions going through EPAM DIAL / Azure AI Foundry back into the data.](specs/site-generator/architecture.png)
+The flow, start to finish:
 
-Two inputs, one script:
+1. **Give it a topic.** Either fully-formed content — questions with answers already written — or just the bare questions.
+2. **It becomes structured content.** Anything already written gets carried across faithfully, nothing rephrased or dropped. Bare questions get answers drafted as part of the process; that drafting step should eventually go through a proper LLM service rather than being done ad hoc, so there's a real, checkable source behind every generated answer instead of just "an assistant wrote something once."
+3. **It gets checked before it ships.** The structured content has a defined shape, and anything that doesn't match it needs to be caught there — not discovered later on the live site.
+4. **It goes live**, at its own address, as part of the same request — not a separate manual step to remember afterward.
 
-- **`data/*.yaml`** — the content. One file per deck: sections → difficulty tiers → questions, each with a `lead` (the 15-second answer) and a `body` (the rest).
-- **`template/`** — the chrome. Sidebar nav, search, difficulty filters, expand/collapse, the confidence-checkbox progress bar, light/dark toggle — lifted from a hand-built prototype, now generic across any deck.
-- **`scripts/build.mjs`** — the generator. Validates every deck's shape (fails loudly, names the exact field, rather than shipping a broken page), renders each into `dist/<deck>/index.html`, and writes a `dist/index.html` that lists every deck found in `data/`.
-
-Nothing here is a framework. The output is plain static HTML/CSS/JS — deployable anywhere, currently targeting Cloudflare Pages.
-
-## Try it
-
-```bash
-npm install
-npm run build          # data/*.yaml + template/ → dist/
-npx serve dist          # preview locally
-```
-
-Deploying is one command, fully non-interactive given `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (see `.env.example`) — no dashboard step, not even for the first deploy:
-
-```bash
-npx wrangler pages deploy dist --project-name=ai-upskill-learning-site
-```
-
-To add a topic by hand: drop a new `data/<deck>.yaml` following the schema below, `npm run build`, then the deploy command above — or run `scripts/publish.sh "message"` after staging your changes, which does build+commit+push+deploy+verify in one call. Handing the source content to Claude Code instead invokes [`.claude/skills/publish-content`](.claude/skills/publish-content/SKILL.md), which does the whole loop — including turning raw content into the schema — in one request.
-
-### The schema
-
-```yaml
-id: interview-prep              # → /interview-prep/
-title: "..."                    # hero heading
-sections:
-  - id: s1
-    title: "..."
-    tiers:
-      - name: Foundational
-        questions:
-          - id: "1.1"
-            question: "..."
-            lead: "..."         # the one-sentence version
-            body: "..."         # the rest — trusted inline HTML (p, ul/ol, table, code)
-```
-
-Full contract — every field, what's optional, how difficulty filtering works, header stats — is in [`specs/site-generator/spec.md`](specs/site-generator/spec.md). That spec is this project's spec-driven piece (per the AI Upskill initiative's SDD requirement): written down, then built and checked against, before this README was.
-
-## Verified
-
-The first deck (`interview-prep`, 44 questions extracted from an original hand-built prototype — see `scripts/migrate-html-to-yaml.mjs`) was built and driven in a real browser: search filtered correctly, a question expanded to show its answer, ticking a confidence checkbox moved the progress bar to the exact right percentage, and the theme toggle switched palettes. Full detail and the known gaps (no persisted progress, no automated visual-regression check) are in the spec's own [Verification](specs/site-generator/spec.md#8-verification-performed) and [Known limitations](specs/site-generator/spec.md#7-known-limitations) sections.
-
-## Status
-
-- [x] Workflow built: schema, template, generator, spec
-- [x] Verified locally (search, filters, checkboxes, theme toggle all match the source)
-- [x] Public GitHub repo: [Lukasz-dataeng/ai-upskill-learning-site](https://github.com/Lukasz-dataeng/ai-upskill-learning-site)
-- [x] Cloudflare Pages project, first live deploy — fully automated via `wrangler`, no dashboard step: **https://ai-upskill-learning-site.pages.dev**
-- [x] [`.claude/skills/publish-content/`](.claude/skills/publish-content/SKILL.md) — the loop above as one repeatable Claude Code skill, tested by using it to publish itself
-- [ ] Answer-generation hook wired to an EPAM DIAL endpoint, for decks that start as bare questions
+Everything else — which topic, how many questions, how the answers were sourced — is a detail the workflow absorbs. The point is that none of it should require touching the presentation layer again.
