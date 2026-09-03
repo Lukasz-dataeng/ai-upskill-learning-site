@@ -2,7 +2,7 @@
 
 **The workflow:** hand over a deck of questions and answers as YAML, get back a fast, interactive, self-quizzing static site. Content in, deployable site out — the same shell, styling, search, and confidence-tracking every time, with a new topic costing one data file instead of another hand-built page.
 
-> Status: the workflow is built and verified end-to-end locally (see [Verified](#verified)). Not deployed yet — no GitHub repo or Cloudflare Pages project exists. Live URL: TBD.
+> Status: live. **https://ai-upskill-learning-site.pages.dev**
 
 ---
 
@@ -26,7 +26,13 @@ npm run build          # data/*.yaml + template/ → dist/
 npx serve dist          # preview locally
 ```
 
-To add a topic: drop a new `data/<deck>.yaml` following the schema below, `npm run build`, then deploy `dist/`. That whole loop — content in, agent runs the build, pushes, confirms the live URL — is meant to become a single Claude Code request; see [Status](#status).
+Deploying is one command, fully non-interactive given `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (see `.env.example`) — no dashboard step, not even for the first deploy:
+
+```bash
+npx wrangler pages deploy dist --project-name=ai-upskill-learning-site
+```
+
+To add a topic: drop a new `data/<deck>.yaml` following the schema below, `npm run build`, then the deploy command above. That whole loop — content in, agent builds, agent deploys, confirms the live URL — is meant to become a single Claude Code request; see [Status](#status).
 
 ### The schema
 
@@ -55,6 +61,7 @@ The first deck (`interview-prep`, 44 questions extracted from an original hand-b
 
 - [x] Workflow built: schema, template, generator, spec
 - [x] Verified locally (search, filters, checkboxes, theme toggle all match the source)
+- [x] Public GitHub repo: [Lukasz-dataeng/ai-upskill-learning-site](https://github.com/Lukasz-dataeng/ai-upskill-learning-site)
+- [x] Cloudflare Pages project, first live deploy — fully automated via `wrangler`, no dashboard step: **https://ai-upskill-learning-site.pages.dev**
 - [ ] `.claude/skills/publish-content/` — package the loop above as one repeatable Claude Code skill
-- [ ] Public GitHub repo, Cloudflare Pages project, first live deploy
 - [ ] Answer-generation hook wired to an EPAM DIAL endpoint, for decks that start as bare questions
