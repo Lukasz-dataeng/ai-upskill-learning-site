@@ -102,6 +102,30 @@ code{font-family:var(--mono);font-size:.86em;background:var(--card2);border:1px 
 .lead{border-left:3px solid var(--acc);padding:2px 0 2px 13px;margin:14px 0 4px !important;
   color:var(--tx) !important;font-size:14.6px !important;font-weight:500}
 
+/* ---------- quiz ---------- */
+.quizbtn{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--tx3);border-radius:8px;
+  padding:3px 9px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;margin-top:1px}
+.quizbtn:hover{color:var(--tx);border-color:var(--line2)}
+.q.quizon .quizbtn{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.quiz{display:none;padding:14px 17px 16px;border-top:1px solid var(--line);background:var(--card2)}
+.q.quizon .quiz{display:block}
+.quizstem{margin:0 0 12px;font-size:14px;font-weight:600;color:var(--tx)}
+.quizopts{list-style:none;margin:0;padding:0}
+.quizopts li{margin:0 0 8px}
+.quizopt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+  color:var(--tx2);border-radius:9px;padding:9px 12px;font-size:13.4px;font-family:inherit;line-height:1.5;cursor:pointer}
+.quizopt:hover{color:var(--tx);border-color:var(--line2)}
+.quizwhy{display:none;font-size:12.2px;color:var(--tx3);padding:6px 12px 0 12px}
+.quiz.answered .quizwhy{display:block}
+.quiz.answered .quizopt{cursor:default}
+.quiz.answered .quizopt:hover{color:var(--tx2);border-color:var(--line)}
+.quiz.answered .quizopt[data-correct]{border-color:color-mix(in srgb,var(--ok) 55%,transparent);
+  background:color-mix(in srgb,var(--ok) 10%,var(--card));color:var(--tx)}
+.quiz.answered .quizopt.picked:not([data-correct]){border-color:color-mix(in srgb,var(--bad) 55%,transparent);
+  background:color-mix(in srgb,var(--bad) 10%,var(--card));color:var(--tx)}
+.quiz.answered .quizopt[data-correct]::after{content:" ✓";color:var(--ok);font-weight:700}
+.quiz.answered .quizopt.picked:not([data-correct])::after{content:" ✗";color:var(--bad);font-weight:700}
+
 /* callouts */
 .box{border-radius:11px;padding:12px 14px;margin:14px 0;font-size:13.6px;border:1px solid var(--line)}
 .box b.t{display:block;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px}

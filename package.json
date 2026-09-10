@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "quiz": "node scripts/generate-quiz.mjs",
+    "test": "node --test \"test/**/*.test.mjs\"",
     "migrate:interview-prep": "node scripts/migrate-html-to-yaml.mjs"
   },
   "dependencies": {

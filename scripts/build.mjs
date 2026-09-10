@@ -5,14 +5,16 @@
 // spec-driven — see specs/site-generator/spec.md for the contract this
 // script is expected to satisfy, and the acceptance checks below.
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import * as yaml from "js-yaml";
+import { validateQuizItem } from "../agents/schemas.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const dataDir = path.join(root, "data");
+const quizDir = path.join(dataDir, "quiz");
 const templateDir = path.join(root, "template");
 const distDir = path.join(root, "dist");
 
@@ -83,6 +85,58 @@ function validateDeck(deck, file) {
   }
 }
 
+// -------------------------------------------------------------------- quiz
+
+// Quiz items live in their own file (data/quiz/<deck>.yaml) because they are
+// generated and the deck files are hand-written — see specs/agents/spec.md §4.1.
+// Absent file means no quizzes: the site renders exactly as it did before.
+function attachQuiz(deck) {
+  const file = path.join(quizDir, `${deck.id}.yaml`);
+  if (!existsSync(file)) return 0;
+  const name = path.relative(root, file);
+
+  let quiz;
+  try {
+    quiz = yaml.load(readFileSync(file, "utf8"));
+  } catch (e) {
+    fail(`${name}: invalid YAML — ${e.message}`);
+  }
+
+  if (quiz?.deck !== deck.id) {
+    fail(`${name}: "deck" is "${quiz?.deck ?? "(missing)"}", expected "${deck.id}"`);
+  }
+  if (!Array.isArray(quiz.items)) fail(`${name}: "items" must be an array`);
+
+  const byId = new Map();
+  for (const sec of deck.sections) {
+    for (const tier of sec.tiers) {
+      for (const q of tier.questions) byId.set(String(q.id), q);
+    }
+  }
+
+  const seen = new Set();
+  for (const item of quiz.items) {
+    const problems = validateQuizItem(item, `item ${item?.question_id ?? "(no question_id)"}`);
+    if (problems.length) fail(`${name}: ${problems.join("; ")}`);
+
+    const id = String(item.question_id);
+    if (seen.has(id)) fail(`${name}: two items for question "${id}"`);
+    seen.add(id);
+
+    const question = byId.get(id);
+    if (!question) fail(`${name}: question_id "${id}" matches no question in deck "${deck.id}"`);
+    question.quiz = item;
+  }
+
+  // Canned replies from lib/dial-stub.mjs are fine locally and must never ship.
+  // Warned about here, refused outright by scripts/publish.sh.
+  if (JSON.stringify(quiz.items).includes("[stub]")) {
+    console.warn(`! ${name} contains [stub] content — generated without a real DIAL call, do not publish`);
+  }
+
+  return quiz.items.length;
+}
+
 // -------------------------------------------------------------- statistics
 
 function deckStats(deck) {
@@ -109,10 +163,34 @@ function deckStats(deck) {
 
 // ------------------------------------------------------------------ render
 
+// The quiz panel sits between the header and the answer body, so "Quiz me"
+// tests you without revealing the answer — the card still has to be opened for
+// that. Option order is fixed at generation time, not shuffled here.
+function renderQuiz(q) {
+  if (!q.quiz) return { button: "", panel: "" };
+  const options = q.quiz.options
+    .map(
+      (opt) =>
+        `          <li><button type="button" class="quizopt"${opt.correct ? ` data-correct="1"` : ""}>${esc(opt.text)}</button><span class="quizwhy">${esc(opt.why)}</span></li>`
+    )
+    .join("\n");
+  return {
+    button: `<button type="button" class="quizbtn" aria-expanded="false">Quiz me</button>`,
+    panel: `
+      <div class="quiz">
+        <p class="quizstem">${esc(q.quiz.stem)}</p>
+        <ul class="quizopts">
+${options}
+        </ul>
+      </div>`,
+  };
+}
+
 function renderQuestion(q, filterValue) {
+  const quiz = renderQuiz(q);
   return `
     <article class="q" data-d="${esc(filterValue)}">
-      <div class="qh"><span class="qid">${esc(q.id)}</span><span class="qt">${esc(q.question)}</span><span class="chev">▶</span></div>
+      <div class="qh"><span class="qid">${esc(q.id)}</span><span class="qt">${esc(q.question)}</span>${quiz.button}<span class="chev">▶</span></div>${quiz.panel}
       <div class="qb">
         <p class="lead">${q.lead}</p>
         ${q.body || ""}
@@ -259,6 +337,7 @@ ${cards}
 // --------------------------------------------------------------------- run
 
 const decks = loadDecks();
+const quizCounts = new Map(decks.map((deck) => [deck.id, attachQuiz(deck)]));
 
 rmSync(distDir, { recursive: true, force: true });
 mkdirSync(path.join(distDir, "assets"), { recursive: true });
@@ -277,7 +356,9 @@ for (const deck of decks) {
   writeFileSync(path.join(deckDir, "index.html"), page, "utf8");
   if (singleDeck) writeFileSync(path.join(distDir, "index.html"), page, "utf8");
   const stats = deckStats(deck);
-  console.log(`✓ ${deck.id}: ${stats.questions} questions, ${stats.sections} sections → dist/${deck.id}/index.html`);
+  const quizzes = quizCounts.get(deck.id) || 0;
+  const quizNote = quizzes ? `, ${quizzes} quiz item${quizzes === 1 ? "" : "s"}` : "";
+  console.log(`✓ ${deck.id}: ${stats.questions} questions, ${stats.sections} sections${quizNote} → dist/${deck.id}/index.html`);
 }
 
 if (singleDeck) {

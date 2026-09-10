@@ -14,6 +14,16 @@ MSG="${1:?Usage: scripts/publish.sh \"commit message\"}"
 echo "==> Building (validates every deck's data before anything ships)"
 npm run build
 
+# Quiz items can be generated against canned replies (lib/dial-stub.mjs) while
+# DIAL access is being sorted. Useful locally, never publishable.
+echo "==> Checking for stub content"
+if grep -rl "\[stub\]" dist >/dev/null 2>&1; then
+  echo "ERROR: dist/ contains [stub] content, generated without a real DIAL call."
+  echo "       Regenerate it (npm run quiz -- --deck <id> --force) or remove the"
+  echo "       offending data/quiz/<deck>.yaml, then run this again."
+  exit 1
+fi
+
 if git diff --cached --quiet; then
   echo "==> Nothing staged — skipping commit/push, still deploying current dist/"
 else
