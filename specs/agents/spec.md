@@ -109,7 +109,10 @@ cannot reach the live site by accident.
 ### 4.4 What the Critic rejects
 
 - More than one defensible option, or no correct one.
-- A claim not supported by the source answer.
+- A correct option claiming more than the source answer says.
+- A distractor the source cannot rule out. A distractor that contradicts the source is
+  the point, not a defect: the first full run lost 6 of 7 skipped questions to a Critic
+  that read "not supported by the source" as applying to wrong options too.
 - The correct option being the longest, or the only specific one.
 - A distractor that is obviously silly rather than a real confusion.
 

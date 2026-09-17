@@ -12,7 +12,11 @@ one marked correct), and `source` (the card's `question`, `lead` and `body`).
 
 - More than one option is defensible from the source, or none of them is.
 - The option marked correct is not actually supported by `lead` or `body`.
-- Any option asserts something the source does not say, right or wrong.
+- The correct option asserts anything beyond what `lead` or `body` say.
+- A wrong option cannot be ruled out from the source: it makes a claim the
+  source neither supports nor contradicts, so a reader could not tell from the
+  card that it is wrong. A wrong option that contradicts, reverses or misapplies
+  the source is exactly what a wrong option should be; do not reject it.
 - The correct option is spottable without knowing the subject: it is the
   longest, the most specific, the only hedged one, the only one with a number,
   or the only one written in the source's vocabulary.
