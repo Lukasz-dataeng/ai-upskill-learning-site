@@ -186,3 +186,58 @@ export function validateCoachReply(reply, { scoredIds }) {
   });
   return problems;
 }
+
+// ------------------------------------------------------------ topic pipeline
+// See specs/topic-pipeline/spec.md §4. The Reviewer returns the same shape as
+// the Critic, so it reuses validateCriticReply.
+
+export const TIERS = ["Foundational", "Intermediate", "Deep-dive"];
+
+export function validatePlannerReply(reply, { questionCount }) {
+  if (!reply || typeof reply !== "object") return ["reply must be a JSON object"];
+  const problems = [];
+  str(reply.title, "title", problems, { max: 120 });
+  str(reply.description, "description", problems, { max: 400 });
+  if (!Array.isArray(reply.sections) || reply.sections.length < 3 || reply.sections.length > 5) {
+    return [...problems, '"sections" must be an array of 3 to 5 sections'];
+  }
+
+  let total = 0;
+  const seen = new Set();
+  reply.sections.forEach((sec, i) => {
+    const label = `sections[${i}]`;
+    if (!sec || typeof sec !== "object") return problems.push(`${label} must be an object`);
+    str(sec.title, `${label}.title`, problems, { max: 120 });
+    str(sec.summary, `${label}.summary`, problems, { max: 300 });
+    if (!Array.isArray(sec.questions) || sec.questions.length < 2) {
+      return problems.push(`${label}.questions must have at least 2 questions`);
+    }
+    sec.questions.forEach((q, j) => {
+      const ql = `${label}.questions[${j}]`;
+      if (!TIERS.includes(q?.tier)) problems.push(`${ql}.tier must be one of ${TIERS.join(", ")}`);
+      str(q?.question, `${ql}.question`, problems, { max: 300 });
+      const key = String(q?.question ?? "").trim().toLowerCase();
+      if (key && seen.has(key)) problems.push(`${ql} repeats an earlier question word for word`);
+      seen.add(key);
+      total++;
+    });
+  });
+
+  // Models count loosely. Up to a quarter short is accepted; over is not.
+  const floor = Math.ceil(questionCount * 0.75);
+  if (total > questionCount || total < floor) {
+    problems.push(`the plan has ${total} questions; it must have between ${floor} and ${questionCount}`);
+  }
+  return problems;
+}
+
+export function validateAuthorReply(reply) {
+  if (!reply || typeof reply !== "object") return ["reply must be a JSON object"];
+  const problems = [];
+  str(reply.lead, "lead", problems, { max: 500 });
+  str(reply.body, "body", problems, { max: 5000 });
+  if (typeof reply.lead === "string" && /<(p|ul|ol|div|pre|table)\b/i.test(reply.lead)) {
+    problems.push("lead must use inline tags only (strong, em, code), no blocks");
+  }
+  return problems;
+}

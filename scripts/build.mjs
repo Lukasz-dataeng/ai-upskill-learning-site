@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, copyFileSync, rmSy
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import * as yaml from "js-yaml";
+import { validateDeck } from "../lib/deck.mjs";
 import { validateQuizItem } from "../agents/schemas.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,8 +19,6 @@ const quizDir = path.join(dataDir, "quiz");
 const templateDir = path.join(root, "template");
 const distDir = path.join(root, "dist");
 
-const REQUIRED_DECK_FIELDS = ["id", "title", "sections"];
-const REQUIRED_QUESTION_FIELDS = ["id", "question", "lead"];
 
 function esc(str = "") {
   return String(str)
@@ -52,37 +51,10 @@ function loadDecks() {
     } catch (e) {
       fail(`${file}: invalid YAML — ${e.message}`);
     }
-    validateDeck(deck, file);
+    const problems = validateDeck(deck, file);
+    if (problems.length) fail(problems[0]);
     return deck;
   });
-}
-
-function validateDeck(deck, file) {
-  for (const field of REQUIRED_DECK_FIELDS) {
-    if (!deck?.[field]) fail(`${file}: missing required top-level field "${field}"`);
-  }
-  if (!Array.isArray(deck.sections) || deck.sections.length === 0) {
-    fail(`${file}: "sections" must be a non-empty array`);
-  }
-  for (const sec of deck.sections) {
-    if (!sec.id || !sec.title) fail(`${file}: a section is missing "id" or "title"`);
-    if (!Array.isArray(sec.tiers) || sec.tiers.length === 0) {
-      fail(`${file}: section "${sec.id}" has no tiers`);
-    }
-    for (const tier of sec.tiers) {
-      if (!tier.name) fail(`${file}: a tier in section "${sec.id}" is missing "name"`);
-      if (!Array.isArray(tier.questions) || tier.questions.length === 0) {
-        fail(`${file}: tier "${tier.name}" in section "${sec.id}" has no questions`);
-      }
-      for (const q of tier.questions) {
-        for (const field of REQUIRED_QUESTION_FIELDS) {
-          if (!q?.[field]) {
-            fail(`${file}: question ${q?.id ?? "(no id)"} in "${sec.id}/${tier.name}" is missing "${field}"`);
-          }
-        }
-      }
-    }
-  }
 }
 
 // -------------------------------------------------------------------- quiz

@@ -9,7 +9,8 @@
     "quiz": "node scripts/generate-quiz.mjs",
     "test": "node --test \"test/**/*.test.mjs\"",
     "migrate:interview-prep": "node scripts/migrate-html-to-yaml.mjs",
-    "interview": "node scripts/build.mjs && node scripts/interview-server.mjs"
+    "interview": "node scripts/build.mjs && node scripts/interview-server.mjs",
+    "topic": "node scripts/topic.mjs"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
