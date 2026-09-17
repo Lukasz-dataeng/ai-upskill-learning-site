@@ -31,8 +31,12 @@ git add data/<deck-id>.yaml   # plus template/, scripts/, specs/ too, if this re
 Then hand off to the script that does the rest:
 
 ```bash
-scripts/publish.sh "Add <deck-id> deck: <short description>"
+scripts/publish.sh "Add <deck-id> deck: <short description>
+
+Co-Authored-By: <the model you are running as> <noreply@anthropic.com>"
 ```
+
+The script commits the message exactly as given and adds no attribution of its own, so the trailer is yours to write, naming the model actually doing the work.
 
 That one command builds (`npm run build` — this **validates** every deck's required fields and fails loudly, naming the exact bad field, rather than shipping a broken page), commits whatever you staged, pushes to `origin/main`, deploys to Cloudflare Pages via `wrangler` (reading `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` from the repo's gitignored `.env` — no dashboard step, ever, including first-time project creation), and checks the live site actually returns HTTP 200 before declaring success.
 

@@ -6,6 +6,10 @@
 # commit, only what to do once that's decided.
 #
 # Usage: scripts/publish.sh "commit message"
+#
+# The message is committed exactly as given. Put any attribution trailer
+# (e.g. Co-Authored-By for the model doing the work) in the message itself;
+# the script does not add one, so it never goes stale when the model changes.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -28,9 +32,7 @@ if git diff --cached --quiet; then
   echo "==> Nothing staged — skipping commit/push, still deploying current dist/"
 else
   echo "==> Committing"
-  git commit -m "$MSG
-
-Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
+  git commit -m "$MSG"
   echo "==> Pushing"
   git push
 fi
