@@ -100,3 +100,89 @@ export function validateQuizItem(item, label = "item") {
 
   return problems;
 }
+
+// ------------------------------------------------------------------ Slice B
+// Each validator also takes the ids the reply is allowed to name, so a reply
+// that points at a question outside the section, or outside what was asked,
+// fails the same way a malformed one does (spec §8 criterion 15).
+
+export const SCORE_MIN = 0;
+export const SCORE_MAX = 5;
+export const PLAN_MAX = 3;
+
+function knownId(value, label, allowed, problems) {
+  const id = String(value ?? "");
+  if (!allowed.has(id)) {
+    problems.push(`${label} is "${id}", which is not one of: ${[...allowed].join(", ")}`);
+  }
+  return id;
+}
+
+function strList(value, label, problems, { maxItems, maxLength }) {
+  if (!Array.isArray(value)) {
+    problems.push(`${label} must be an array of strings`);
+    return;
+  }
+  if (value.length > maxItems) problems.push(`${label} has ${value.length} entries, at most ${maxItems} allowed`);
+  value.forEach((v, i) => str(v, `${label}[${i}]`, problems, { max: maxLength }));
+}
+
+export function validateInterviewerReply(reply, { questionIds }) {
+  if (!reply || typeof reply !== "object") return ["reply must be a JSON object"];
+  const problems = [];
+  str(reply.text, "text", problems, { max: 600 });
+  knownId(reply.questionId, "questionId", new Set(questionIds), problems);
+  return problems;
+}
+
+export function validateEvaluatorReply(reply, { askedIds }) {
+  if (!reply || typeof reply !== "object") return ["reply must be a JSON object"];
+  if (!Array.isArray(reply.scores)) return ['"scores" must be an array'];
+  const problems = [];
+  const allowed = new Set(askedIds);
+  const seen = new Set();
+
+  reply.scores.forEach((entry, i) => {
+    const label = `scores[${i}]`;
+    if (!entry || typeof entry !== "object") {
+      problems.push(`${label} must be an object`);
+      return;
+    }
+    const id = knownId(entry.questionId, `${label}.questionId`, allowed, problems);
+    if (seen.has(id)) problems.push(`${label} grades "${id}" a second time`);
+    seen.add(id);
+    if (!Number.isInteger(entry.score) || entry.score < SCORE_MIN || entry.score > SCORE_MAX) {
+      problems.push(`${label}.score must be an integer from ${SCORE_MIN} to ${SCORE_MAX}`);
+    }
+    strList(entry.missed, `${label}.missed`, problems, { maxItems: 4, maxLength: 300 });
+    strList(entry.wrong, `${label}.wrong`, problems, { maxItems: 4, maxLength: 300 });
+  });
+
+  const ungraded = [...allowed].filter((id) => !seen.has(id));
+  if (ungraded.length) problems.push(`no score for asked question(s): ${ungraded.join(", ")}`);
+  return problems;
+}
+
+export function validateCoachReply(reply, { scoredIds }) {
+  if (!reply || typeof reply !== "object") return ["reply must be a JSON object"];
+  if (!Array.isArray(reply.plan)) return ['"plan" must be an array'];
+  const problems = [];
+  const allowed = new Set(scoredIds);
+  const wanted = Math.min(PLAN_MAX, allowed.size);
+  if (reply.plan.length < 1 || reply.plan.length > wanted) {
+    problems.push(`"plan" has ${reply.plan.length} entries, it must have 1 to ${wanted}`);
+  }
+  const seen = new Set();
+  reply.plan.forEach((entry, i) => {
+    const label = `plan[${i}]`;
+    if (!entry || typeof entry !== "object") {
+      problems.push(`${label} must be an object`);
+      return;
+    }
+    const id = knownId(entry.questionId, `${label}.questionId`, allowed, problems);
+    if (seen.has(id)) problems.push(`${label} repeats "${id}"`);
+    seen.add(id);
+    str(entry.why, `${label}.why`, problems, { max: 400 });
+  });
+  return problems;
+}

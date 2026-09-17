@@ -189,7 +189,7 @@ ${options}
 function renderQuestion(q, filterValue) {
   const quiz = renderQuiz(q);
   return `
-    <article class="q" data-d="${esc(filterValue)}">
+    <article class="q" id="q-${esc(q.id)}" data-d="${esc(filterValue)}">
       <div class="qh"><span class="qid">${esc(q.id)}</span><span class="qt">${esc(q.question)}</span>${quiz.button}<span class="chev">▶</span></div>${quiz.panel}
       <div class="qb">
         <p class="lead">${q.lead}</p>
@@ -285,6 +285,7 @@ function renderDeckPage(deck, { showIndexLink }) {
     SECTIONS_HTML: sectionsHtml,
     FOOTER_NOTE: deck.footer_note ? `  <p>${deck.footer_note}</p>` : "",
     DECK_INDEX_LINK: deckIndexLink,
+    DECK_ID: esc(deck.id),
   };
 
   return Object.entries(replacements).reduce(

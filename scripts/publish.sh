@@ -45,9 +45,16 @@ npx wrangler pages deploy dist --project-name=ai-upskill-learning-site
 
 echo "==> Verifying the live site"
 sleep 2
-CODE=$(curl -s -o /dev/null -w "%{http_code}" https://ai-upskill-learning-site.pages.dev/)
-if [ "$CODE" != "200" ]; then
-  echo "WARNING: live site returned HTTP $CODE, not 200 — check manually before reporting success"
+# The site sits behind Cloudflare Access, so an anonymous request is expected
+# to be redirected to the Access login page. That redirect, or a plain 200 if
+# the gate is ever removed, means the site is up. Anything else does not.
+read -r CODE LOCATION < <(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" https://ai-upskill-learning-site.pages.dev/)
+if [ "$CODE" = "302" ] && [[ "$LOCATION" == https://*.cloudflareaccess.com/* ]]; then
+  echo "==> Live, behind Cloudflare Access: https://ai-upskill-learning-site.pages.dev (HTTP 302 to the login page)"
+elif [ "$CODE" = "200" ]; then
+  echo "WARNING: live site returned HTTP 200 without a login. Is the Cloudflare Access gate still on?"
+  exit 1
+else
+  echo "WARNING: live site returned HTTP $CODE, not the Access login redirect. Check manually before reporting success"
   exit 1
 fi
-echo "==> Live: https://ai-upskill-learning-site.pages.dev (HTTP $CODE)"

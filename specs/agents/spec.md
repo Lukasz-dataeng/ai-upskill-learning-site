@@ -1,7 +1,8 @@
 # Learning agents — specification
 
-Status: **Slice A implemented and verified** (see §10), **Slice B not started.** This was
-written before either, and is kept true as code lands. Same spec-driven approach as
+Status: **Slice A implemented, verified and live** (see §10). **Slice B implemented and
+verified for local use only** (§5, §6, §10). This was written before either, and is kept true as code
+lands. Same spec-driven approach as
 [`specs/site-generator/spec.md`](../site-generator/spec.md), which this builds on rather
 than replaces.
 
@@ -11,8 +12,9 @@ Add two agent-backed features to the learning site:
 
 - **Slice A, Quiz.** Turn each existing question/answer card into one multiple-choice
   question, generated ahead of time and committed to the repo.
-- **Slice B, Mock interview.** Let someone sit a short spoken-style interview on a deck,
-  in the browser, and get graded afterwards.
+- **Slice B, Mock interview.** Let the owner sit a short interview on one section of a
+  deck, in the browser, and get graded afterwards. It runs on the owner's laptop, not on
+  the public site (§6).
 
 Both run on **EPAM DIAL**, so the model behind them is Azure-hosted. Both use several
 agents with separate jobs rather than one big prompt, because the separation is what
@@ -24,8 +26,8 @@ giveaways, and an interviewer that never saw the answers cannot leak them.
 - **No agent framework.** An agent is a prompt file plus a function that calls DIAL. The
   project has no frontend framework and no templating engine; it does not need an agent
   library either.
-- **No accounts of our own, no server-side storage.** Who may use the site is Cloudflare
-  Access's job (§6). We store nothing about a user, ever.
+- **No accounts, no server-side storage.** Slice B has exactly one user, the owner, on
+  their own machine (§6). Nothing about a session is stored, ever.
 - **No streaming.** A reply arrives when it is complete.
 - **No auto-publish.** Generated quiz content lands in a file for a human to read as a
   diff before it ships. An agent never commits and never deploys.
@@ -44,7 +46,7 @@ fixed shape.
 | Writer | A | one question's `question`, `lead`, `body` | other questions | stem, plus the correct option |
 | Distractor | A | the same source, plus the correct option | anything else | three wrong options, each with a reason it is wrong |
 | Critic | A | the assembled item, plus the source answer | anything else | `ok`, or a list of problems |
-| Interviewer | B | the deck's question list, the transcript so far | **any `lead` or `body` text** | the next thing to say |
+| Interviewer | B | the section's question list, the transcript so far | **any `lead` or `body` text** | the next thing to say |
 | Evaluator | B | the transcript, plus `lead` and `body` for every question asked | anything else | per-question score and notes |
 | Coach | B | the Evaluator's output | the raw transcript | three things to study, with card ids |
 
@@ -131,12 +133,23 @@ no cost per visitor.
 
 ### 5.1 Endpoint
 
-One Cloudflare Pages Function, shipped by the same `wrangler pages deploy` that already
-deploys the site:
+A small local Node server, started on the owner's laptop while connected to the EPAM VPN:
 
 ```
+npm run interview          # builds, then serves dist/ and the API on http://127.0.0.1:8788
+npm run interview -- --stub
+```
+
+It serves the built site unchanged, plus one endpoint:
+
+```
+GET  /api/interview        → { "ok": true, "mode": "live" | "stub" }
 POST /api/interview
 ```
+
+The `GET` exists so the page can tell whether it is talking to this server. The public
+site on Cloudflare has no such route, so there the probe fails and no interview button
+appears.
 
 Request:
 
@@ -145,12 +158,13 @@ Request:
   "deckId": "interview-prep",
   "sectionId": "s1",
   "action": "next",
-  "transcript": [{ "role": "interviewer", "text": "..." },
+  "transcript": [{ "role": "interviewer", "text": "...", "questionId": "1.3" },
                  { "role": "candidate",   "text": "..." }]
 }
 ```
 
-`action` is `next` or `finish`. The browser holds the transcript and sends it back each
+`action` is `next` or `finish`. `questionId` is set on interviewer turns only, and must
+name a question in that section. The browser holds the transcript and sends it back each
 turn, so the server keeps no state and needs no database.
 
 Response to `next`:
@@ -159,102 +173,109 @@ Response to `next`:
 { "text": "...", "questionId": "1.3", "turnsLeft": 7 }
 ```
 
-Response to `finish`:
+Response to `finish`, and to a `next` that the turn limit turns into a finish:
 
 ```json
 {
+  "forced": false,
   "scores": [{ "questionId": "1.3", "score": 3, "missed": ["..."], "wrong": ["..."] }],
   "plan":   [{ "questionId": "1.3", "why": "..." }]
 }
 ```
 
+`score` is an integer from 0 to 5. `plan` has one to three entries, each naming a question
+that appears in `scores`.
+
+The request handling lives in `lib/interview.mjs` as one function that takes the parsed
+request and returns a status and a body. The server in `scripts/interview-server.mjs`
+only does HTTP around it. If Slice B is ever hosted (§6.2), that function moves; the
+HTTP wrapper is what gets replaced.
+
 ### 5.2 Orchestration
 
-The Function is the orchestrator and holds no logic beyond routing:
+The handler is the orchestrator and holds no logic beyond routing:
 
 - `next` calls the **Interviewer** once and returns its reply.
 - `finish` calls the **Evaluator**, then passes only the Evaluator's output to the
   **Coach**. Two calls, in order, one handoff.
 
-The Interviewer's prompt is built from the deck's `question` fields only. `lead` and
-`body` are stripped in code before the prompt is assembled, not by telling the model to
-ignore them.
+The Interviewer's prompt is built from the section's `id` and `question` fields only.
+`lead` and `body` are stripped in code before the prompt is assembled, not by telling the
+model to ignore them.
+
+The Evaluator gets `lead` and `body` for the questions the Interviewer actually asked,
+as plain text with the HTML removed, and nothing for questions that were not asked.
 
 ### 5.3 Limits
 
-Checked in the Function, per request, before any DIAL call:
+Checked in the handler, per request, before any DIAL call:
 
 | Limit | Value | On breach |
 |---|---|---|
-| Turns per session | 12 | `finish` is forced |
+| Interviewer turns per session | 12 | a `next` becomes a `finish`, with `forced: true` |
 | Transcript size | 32 KB | HTTP 413 |
 | Candidate answer | 4000 characters | HTTP 413 |
+| Request body | 64 KB | HTTP 413, before parsing |
+| `finish` with no candidate answer | | HTTP 400, nothing to grade |
 | Output tokens per call | 800 | passed to DIAL |
 
 ### 5.4 Page behaviour
 
-A **Mock interview** button on a deck page opens a panel: the interviewer's question, a
-text box, send, and finish. The transcript lives in the browser tab and is gone when it
-closes. If `/api/interview` is unreachable the panel says so, and the rest of the page
-keeps working.
+When the probe in §5.1 succeeds, a **Mock interview** button appears in the toolbar. It
+opens a panel: pick a section, start, then the interviewer's question, a text box, send,
+and finish. When the interview ends, the panel shows a score per question with what was
+missed or wrong, and up to three cards to study, each linking to its card.
 
-One case needs handling by name. When an Access session expires mid-interview (§6), the
-call is redirected to the login page on another host and the browser reports it as an
-opaque network error, not as "please log in". Any failed call therefore shows **"Your
-session expired, reload the page to carry on"**, with the transcript still on screen so
-nothing typed is lost.
+The transcript lives in the browser tab and is gone when it closes. A failed call never
+clears it, and never clears what was typed in the text box. It shows one of these, then
+lets the same action be retried:
+
+| Failure | Message |
+|---|---|
+| The server cannot be reached | The local interview server is not running. Start `npm run interview` and send again. |
+| HTTP 502 (DIAL failed or unreachable) | DIAL did not answer. Check the EPAM VPN is connected and send again. |
+| HTTP 400 or 413 | the server's own message |
 
 ## 6. Access control
 
-The whole site sits behind **Cloudflare Access**, content and `/api/*` alike. This is the
-same setup as step 6 of the project owner's own
-[`setup-strony.md`](../../setup-strony.md) runbook, already proven on this account for a
-different site.
+Slice B is **local only**. The server binds to `127.0.0.1`, so nothing else on the network
+can reach it. The site on Cloudflare Pages has no API: static files only, where the
+Mock interview button never appears.
 
-| | |
-|---|---|
-| Application | one self-hosted app on `ai-upskill-learning-site.pages.dev` |
-| Policy | Allow, Include → Emails ending in → the EPAM domain, plus named addresses for anyone outside it |
-| Login | one-time PIN, so no visitor needs a Cloudflare or GitHub account |
-| Plan | Zero Trust Free, up to 50 users |
+That site is itself behind **Cloudflare Access**, set up on 2026-09-17 as in step 6 of the
+owner's `setup-strony.md` runbook: one self-hosted application covering both
+`ai-upskill-learning-site.pages.dev` and `*.ai-upskill-learning-site.pages.dev` (the
+wildcard matters: every deployment also gets its own subdomain, which would otherwise
+stay public), an Allow policy on named email addresses, and one-time PIN login. It is
+set up once in the Zero Trust dashboard, not per deploy. `scripts/publish.sh` expects an
+anonymous request to be redirected to the Access login page, and fails if the site
+answers 200 without one.
 
-Set up once, in the Zero Trust dashboard or through the Cloudflare API. It is **not** a
-per-deploy step: `wrangler pages deploy` and
-[`scripts/publish.sh`](../../scripts/publish.sh) are unchanged.
+### 6.1 Why not a Cloudflare Pages Function
 
-### 6.1 Why this matters to the agents
+The first version of this spec put `/api/interview` in a Cloudflare Pages Function behind
+Cloudflare Access. Once the DIAL key arrived, two of its terms ruled that out:
 
-A request without a valid Access session is rejected **at Cloudflare's edge, before the
-Function runs**. No prompt is assembled, no DIAL call is made, nothing is billed. That is
-the actual protection here, and it is the reason the agent endpoints can exist at all
-without a rate limiter.
+- **DIAL is reachable only through the EPAM VPN.** Whitelisting is offered only for
+  infrastructure in EPAM-managed accounts on Azure, AWS or GCP. Cloudflare's edge is
+  neither, so a Function would be refused before any prompt ran.
+- **The key is personal.** It "should not be shared or used for team-based workloads". A
+  site that lets up to 50 invited people spend it is exactly that.
 
-### 6.2 What it does not do
+Running on the owner's laptop satisfies both: the call leaves over the VPN, and the only
+person spending the key is its owner.
 
-Access bounds **who** can call the endpoint, not **how often**. An invited person, or a
-loop in the page's own JavaScript, can still spend budget. The per-request caps in §5.3
-are what bound that, and they are not optional because of the gate.
+### 6.2 What hosting it would take
 
-True rate limiting is not available on this hostname: Cloudflare's rate limiting rules are
-zone-level, and `pages.dev` is Cloudflare's zone rather than ours. It becomes possible
-only behind a custom domain, which is out of scope here.
+Recorded so the decision can be revisited, not planned:
 
-### 6.3 Identity, available but unused
-
-Access passes `Cf-Access-Authenticated-User-Email` to the Function on every request. V1
-ignores it. It is recorded here because it is the hook a per-person daily cap would use
-later, without building any login of our own.
-
-The Function does **not** verify the Access JWT itself, because Access covers every route
-on this hostname and nothing can reach the Function without passing it first. If the gate
-is ever narrowed to a path, or a second hostname is added, that assumption breaks and the
-Function must start verifying `Cf-Access-Jwt-Assertion`.
-
-### 6.4 Order of operations
-
-If a custom domain is ever added to this project, add it **before** creating the Access
-policy. The reverse order does not work. This is noted in `setup-strony.md` and is easy to
-get wrong once.
+1. A host in an **EPAM-managed** Azure, AWS or GCP account, with its outbound IP
+   whitelisted through SupportDIAL@epam.com.
+2. A **non-personal** DIAL key, sized for more than one user.
+3. A gate in front of it. Cloudflare Access would no longer be the obvious fit, since the
+   site and the API would sit on different providers; that choice belongs with step 1.
+4. The per-request caps in §5.3 still apply, and a per-person daily cap becomes worth
+   having, because a gate bounds who calls the endpoint, not how often.
 
 ## 7. Shared plumbing
 
@@ -265,26 +286,28 @@ agents/
   schemas.mjs                                  the shape each agent must return, and §4.2's item
 lib/dial.mjs                                   one function: call DIAL, parse JSON, retry once
 lib/dial-stub.mjs                              canned replies, for running without DIAL access
-functions/api/interview.js                     Cloudflare Pages Function (Slice B)
+lib/deck.mjs                                   load a deck and list its questions, shared by A and B
+lib/interview.mjs                              Slice B request handling: limits, prompts, routing
+scripts/interview-server.mjs                   local HTTP server for Slice B (dist/ + the API)
 scripts/generate-quiz.mjs                      build-time run (Slice A)
 data/quiz/<deck-id>.yaml                       generated, reviewed as a diff
 test/quiz.test.mjs                             Slice A's acceptance criteria, as tests
+test/interview.test.mjs                        Slice B's acceptance criteria, as tests
 ```
 
 A prompt file is Markdown: the agent's role, its rules, and the JSON shape it must return.
 Prompts are edited as text, not buried in code.
 
 `lib/dial.mjs` is the only place that knows DIAL exists. It reads `DIAL_ENDPOINT`,
-`DIAL_API_KEY` and `DIAL_DEPLOYMENT_ID`, already declared in
-[`.env.example`](../../.env.example). Locally those come from `.env`. In production they
-are Cloudflare secrets set with `wrangler pages secret put`, never in the repo and never
-sent to the browser.
+`DIAL_API_KEY`, `DIAL_DEPLOYMENT_ID` and the optional `DIAL_TEMPERATURE`, declared in
+[`.env.example`](../../.env.example). They come from the gitignored `.env`, are read only
+by Node on the owner's machine, and are never in the repo and never sent to the browser.
 
 ### 7.1 What is sent to DIAL
 
-Traffic is **outbound only**: browser → Function → DIAL → Azure model. DIAL never connects
-to this site, has no URL for it, and never sits on the inbound path. The Access gate in §6
-therefore needs no exception, allowlist or hole for any of this to work.
+Traffic is **outbound only**: browser → local server on `127.0.0.1` → EPAM VPN → DIAL →
+model. DIAL never connects back, has no URL for the server, and never sits on an inbound
+path.
 
 DIAL cannot read the site. It receives exactly what a prompt puts in front of it, and
 nothing else:
@@ -303,11 +326,10 @@ The **transcript is different**. It is the only data this project creates rather
 copies, and it is a record of what someone did not know, in their own words. Treat it as
 the sensitive part of the system, even though nothing about it is secret.
 
-`Cf-Access-Authenticated-User-Email` is **never** put in a prompt (§6.3). No identity of
-any kind reaches DIAL.
+No identity of any kind is put in a prompt, and none reaches DIAL beyond the key itself.
 
 Two things are outside this project's control and should be confirmed with whoever grants
-DIAL access, before anyone other than the owner uses Slice B: whether EPAM's DIAL instance
+DIAL access, before Slice B is ever used by anyone other than the owner (§6.2): whether EPAM's DIAL instance
 logs prompts and replies and for how long, and what retention the underlying Azure
 deployment applies (Azure OpenAI keeps prompts for abuse monitoring, typically up to 30
 days, unless the tenant has that switched off).
@@ -324,26 +346,26 @@ first.
 | 3 | `npm run quiz` is idempotent: a second run without `--force` changes no file | run twice, `git diff` is empty |
 | 4 | A question the Critic keeps rejecting is skipped without killing the run | force a failure on one question, the rest still generate |
 | 5 | The Interviewer prompt contains no `lead` or `body` text | assert on the assembled prompt before the DIAL call |
-| 6 | A 13th turn is refused | send an over-length transcript, expect a forced `finish` |
+| 6 | A 13th turn is refused | send a transcript with 12 interviewer turns, expect a forced `finish` |
 | 7 | An oversized answer returns 413 and costs nothing | send 5000 characters, assert no DIAL call was made |
 | 8 | No DIAL key reaches the browser | grep `dist/` for the key and for `DIAL_`, expect nothing |
-| 9 | With `data/quiz/` absent and `/api/interview` down, the site behaves exactly as it does today | build with neither, check a deck page |
+| 9 | With `data/quiz/` absent and `/api/interview` down, the site behaves exactly as it does today | build with neither, check a deck page; the live site shows no Mock interview button |
 | 10 | Every agent reply parses against its schema, or fails loudly after one retry | one test per agent with a deliberately broken reply |
-| 11 | An anonymous request to `/api/interview` never reaches the Function | `curl` with no Access cookie, expect the Access login response and no DIAL call in the logs |
-| 12 | An expired session shows a readable message, not a silent hang | clear the Access cookie mid-interview, send a turn, expect the reload prompt with the transcript still visible |
+| 11 | The interview server is reachable only from the same machine | it binds `127.0.0.1`, asserted in a test |
+| 12 | A failed call shows a readable message, not a silent hang, and loses nothing | stop the server mid-interview, send a turn, expect the message with the transcript and the typed answer still there |
 | 13 | Stub-generated content cannot be published | `scripts/publish.sh` greps `dist/` for `[stub]` after building and exits non-zero if it finds any |
+| 14 | The Evaluator gets `lead` and `body` only for questions that were asked | assert on the assembled prompt |
+| 15 | A reply naming a question outside the section, or outside what was asked, is rejected | schema validation, one test per agent |
 
 ## 9. Known limitations, accepted for now
 
-- **A gate, not a rate limiter.** Access stops strangers, and a rejected request costs
-  nothing. It does not stop an invited person, or a runaway loop in our own JavaScript,
-  from spending budget. See §6.2. The per-request caps in §5.3 are the only thing bounding
-  that, and there is no daily ceiling per person.
-- **The site is no longer publicly viewable.** Anyone demoing or reviewing it needs an
-  allowed email address. The public GitHub repo required by the programme is unaffected,
-  since that criterion is about the repo, not the site.
-- **50 seats.** The Zero Trust Free plan tops out there. Well beyond what this needs, but
-  it is a ceiling, not an unlimited allowance.
+- **The site is not publicly viewable.** Anyone reviewing it needs an allowed email
+  address added to the Access policy. The public GitHub repo required by the programme
+  is unaffected. The Zero Trust Free plan caps that list at 50 users.
+- **One user, one laptop.** Slice B works only on the owner's machine, on the VPN. A demo
+  means sharing a screen, not a link. See §6.2 for what changing that would take.
+- **No daily ceiling.** The per-request caps in §5.3 bound a single call. Nothing bounds a
+  day's use except the key's own DIAL limits and the owner's budget.
 - **Quiz quality is judged by one Critic and one human.** Nothing measures whether the
   questions are actually good, only that they are well-formed and grounded.
 - **Evaluator scores are not calibrated.** A 3 out of 5 means what the prompt says it
@@ -351,10 +373,6 @@ first.
 - **Slice A changes `template/app.js`.** The README says a new topic never touches
   `template/`. That still holds: this is a new feature, not a new topic.
 - **Transcripts are lost when the tab closes.** Deliberate, see §2.
-- **No quiz item has been generated by a real model yet.** Everything shipped so far ran
-  against the stub, so nothing is yet known about whether the Critic actually catches a
-  bad question written by a real Writer. That is the first thing to check once DIAL
-  credentials exist.
 
 ## 10. Verification performed
 
@@ -386,3 +404,40 @@ mode:
   and pink, not the dark-mode tints reused unchanged.
 - **The stub guard fires.** `npm run build` warns that the quiz file holds `[stub]`
   content, and the `publish.sh` check exits non-zero on the resulting `dist/`.
+
+### Slice B
+
+Checked on 2026-09-17, against a build of the `interview-prep` deck.
+
+`npm test` covers criteria 5, 6, 7, 10, 11, 14 and 15 as 18 automated tests in
+`test/interview.test.mjs`, all passing against the stub, next to Slice A's 13:
+
+- the Interviewer's assembled prompt contains no run of words from any `lead` or `body`
+  in the section, and no `lead`, `body` or `answer` key;
+- the Evaluator gets answers only for questions the candidate replied to, as plain text;
+  the Coach gets a single `scores` key and no transcript text;
+- a `next` after 12 interviewer turns returns a forced finish; the twelfth is still a
+  question;
+- a 5000-character answer, a transcript over 32 KB, a finish with nothing answered and
+  six kinds of malformed request are all refused with **zero** agent calls;
+- an unparseable reply returns 502 after exactly two attempts, for `next` and `finish`;
+- each Slice B validator rejects a question id outside what it was allowed to name,
+  duplicates, and out-of-range scores or plan lengths;
+- over real HTTP, the server listens on `127.0.0.1`, answers the probe, serves a turn,
+  and refuses an oversized and a non-JSON body.
+
+By hand, against the running server:
+
+- **Stub mode over HTTP.** The page, `assets/app.js` and the API all answered. Path
+  traversal to `.env`, plain and URL-encoded (`..%2F`, `%2e%2e%2f`, `..%5C`), returned
+  403 or 404, never the file.
+- **One live interview on DIAL** (`gpt-5.6-luna-2026-07-09`, section s3): two turns and a
+  finish, about 16 seconds end to end, well under one cent. The Interviewer greeted, asked
+  3.1, then moved to 3.2 with a neutral "Thanks. Next," and no feedback. For a partial
+  answer on temperature the Evaluator gave 3 with three missed points and nothing wrong;
+  for a planted misconception on max tokens (that it limits the prompt) it gave 1 and
+  named both wrong claims against the deck. The Coach put 3.2 first for that reason.
+
+Not yet checked: the panel in a real browser, including criterion 12 (stop the server
+mid-interview and confirm the message appears with the transcript and typed answer
+kept). The page code was syntax-checked and the built HTML inspected, nothing more.

@@ -31,7 +31,7 @@
 {{DECK_INDEX_LINK}}
 </aside>
 
-<main class="main">
+<main class="main" data-deck="{{DECK_ID}}">
 
 <div class="hero">
   <h1>{{HERO_TITLE}}</h1>
@@ -49,6 +49,32 @@
 {{FILTER_BUTTONS}}
   <button class="btn" id="expand">Expand all</button>
   <button class="btn" id="theme">◐ Theme</button>
+  <button class="btn hide" id="ivbtn" aria-expanded="false">Mock interview</button>
+</div>
+
+<!-- Slice B. Stays hidden unless the page is served by the local interview
+     server (npm run interview), which answers GET /api/interview. -->
+<div class="iv hide" id="iv">
+  <div class="ivhead">
+    <b>Mock interview</b><span class="ivmeta" id="ivmeta"></span>
+    <button class="btn" id="ivclose">Close</button>
+  </div>
+  <div class="ivstart" id="ivstart">
+    <label for="ivsec">Section</label>
+    <select class="search" id="ivsec"></select>
+    <button class="btn on" id="ivgo">Start interview</button>
+  </div>
+  <div class="ivlog" id="ivlog" aria-live="polite"></div>
+  <div class="ivinput hide" id="ivinput">
+    <textarea id="ivans" maxlength="4000" rows="5" placeholder="Answer the way you would out loud. Ctrl+Enter sends."></textarea>
+    <div class="ivactions">
+      <span class="ivcount" id="ivcount">0 / 4000</span>
+      <button class="btn" id="ivfinish">Finish and grade</button>
+      <button class="btn on" id="ivsend">Send</button>
+    </div>
+  </div>
+  <div class="ivstatus hide" id="ivstatus" role="status"></div>
+  <div class="ivresult hide" id="ivresult"></div>
 </div>
 
 <div id="content">

@@ -63,9 +63,9 @@ Nothing about a new topic touches `template/` or `scripts/`. It's purely a new f
 - **Node.js** runs the generator: a small build script, not a framework. Nothing to compile, nothing to configure beyond what's in `package.json`.
 - **YAML** (`js-yaml`) is the content format. It's readable to write by hand, and more forgiving of long multi-line prose than JSON would be.
 - **Plain HTML, CSS, and JS** is what gets generated. No frontend framework: the interactivity (search, filtering, confidence tracking, theming) is small enough that one hasn't been worth the weight.
-- **Cloudflare Pages** is where a topic ends up live, deployed through its CLI (`wrangler`) rather than its dashboard. The point is that publishing stays a command, not a series of clicks.
+- **Cloudflare Pages** is where a topic ends up live, deployed through its CLI (`wrangler`) rather than its dashboard. The point is that publishing stays a command, not a series of clicks. The site sits behind **Cloudflare Access**: visitors on an allowed list log in with a one-time code sent to their email.
 - **Git and GitHub** are the source of truth. Every topic is a tracked file, so what's live is always exactly what's in the repo.
-- **EPAM DIAL** will eventually draft answers to bare questions through an actual LLM service instead of ad hoc. It's the one piece still missing before "any topic" is fully hands-off.
+- **EPAM DIAL** is the LLM gateway behind the agents below, with a deliberately cheap model. Drafting answers to bare questions through it is the one piece still missing before "any topic" is fully hands-off.
 
 ## How it works
 
@@ -77,3 +77,14 @@ The flow, start to finish:
 4. **It goes live** at its own address, as part of the same request rather than a separate manual step to remember afterward.
 
 Which topic, how many questions, how the answers were sourced: all of that is a detail the workflow absorbs. The point is that none of it should require touching the presentation layer again.
+
+## Practising with agents
+
+Reading answers only goes so far, so two features put a model to work on the same content. Both are specified in [`specs/agents/spec.md`](specs/agents/spec.md), and both use several small agents with one job each rather than one big prompt.
+
+- **Quiz me** (on the live site). Every card has a multiple-choice question. A Writer drafts it from the card, a Distractor adds three wrong options, and a Critic rejects anything unfair or guessable. They run once, ahead of time; the result is committed to `data/quiz/` and reviewed as a diff, so a visitor never triggers a model call.
+- **Mock interview** (on my laptop only). An Interviewer asks questions from one section without ever being given the answers, an Evaluator grades each reply against the card, and a Coach picks up to three cards to re-read. It runs locally because the DIAL key is personal and DIAL is reachable only over the EPAM VPN:
+  ```
+  npm run interview            # http://127.0.0.1:8788, needs the VPN
+  npm run interview -- --stub  # canned replies, no DIAL, nothing billed
+  ```
