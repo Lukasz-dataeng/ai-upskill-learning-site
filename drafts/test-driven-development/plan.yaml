@@ -1,0 +1,76 @@
+# Plan for a generated deck. Stop 1: edit freely before answering "y".
+# Change, add or remove questions; tier is Foundational, Intermediate or Deep-dive.
+# New questions need no id. Removing a section renumbers the ones after it.
+deck: test-driven-development
+title: Test Driven Development
+description: >-
+  A study deck for understanding and applying Test Driven Development principles and practices in
+  software engineering.
+sections:
+  - id: s1
+    title: Core TDD Concepts
+    summary: Understanding the fundamental principles and the red-green-refactor cycle.
+    questions:
+      - id: '1.1'
+        tier: Foundational
+        question: What is Test Driven Development (TDD) and what are its primary goals?
+      - id: '1.2'
+        tier: Foundational
+        question: Describe the Red-Green-Refactor cycle in TDD. What happens in each phase?
+      - id: '1.3'
+        tier: Intermediate
+        question: What are the benefits of writing tests before writing production code?
+  - id: s2
+    title: Writing Effective Tests
+    summary: Techniques and best practices for creating maintainable and valuable tests.
+    questions:
+      - id: '2.1'
+        tier: Foundational
+        question: What characteristics define a 'good' unit test in the context of TDD?
+      - id: '2.2'
+        tier: Intermediate
+        question: Explain the concept of 'Arrange, Act, Assert' (AAA) and how it applies to writing tests.
+      - id: '2.3'
+        tier: Intermediate
+        question: What is test isolation, and why is it important in TDD?
+      - id: '2.4'
+        tier: Deep-dive
+        question: >-
+          How do you handle dependencies (like databases, network calls, or external services) when
+          writing unit tests in TDD?
+  - id: s3
+    title: Refactoring and Design
+    summary: How TDD influences code design and the role of refactoring.
+    questions:
+      - id: '3.1'
+        tier: Foundational
+        question: What is refactoring, and why is it a crucial part of the TDD process?
+      - id: '3.2'
+        tier: Intermediate
+        question: How can TDD lead to better code design and simpler architectures?
+      - id: '3.3'
+        tier: Intermediate
+        question: Describe common refactoring techniques used after the 'green' phase in TDD.
+      - id: '3.4'
+        tier: Deep-dive
+        question: What are some common anti-patterns or mistakes to avoid when refactoring during TDD?
+  - id: s4
+    title: TDD in Practice and Challenges
+    summary: Applying TDD in real-world scenarios and overcoming common obstacles.
+    questions:
+      - id: '4.1'
+        tier: Foundational
+        question: When might TDD be less suitable or more challenging to apply?
+      - id: '4.2'
+        tier: Intermediate
+        question: >-
+          How does TDD impact the development of legacy code or in situations with existing test
+          suites?
+      - id: '4.3'
+        tier: Intermediate
+        question: >-
+          What is the role of integration tests and end-to-end tests in a TDD workflow, and how do
+          they complement unit tests?
+      - id: '4.4'
+        tier: Deep-dive
+        question: How would you introduce TDD into a team that is not currently practicing it?
