@@ -1,0 +1,446 @@
+# Answers cache for the topic pipeline. Edit the plan, not this file.
+answers:
+  '2.1':
+    question: Explain the concept of an Event-Driven Architecture. What are the main components?
+    status: ok
+    rounds: 1
+    lead: >-
+      An Event-Driven Architecture organizes a system around producing, transporting, and reacting
+      to events—records that something happened. Producers and consumers are decoupled through event
+      infrastructure, allowing consumers to process events independently and asynchronously.
+    body: >-
+      <p>An Event-Driven Architecture (EDA) uses <strong>events</strong> as a primary means of
+      communication. An event is an immutable record of a fact, such as <code>OrderPlaced</code> or
+      <code>PaymentReceived</code>; it describes something that has already happened rather than
+      directly requesting an action.</p><p>The main components are:</p><ul><li><strong>Event
+      producers:</strong> services or applications that detect a state change and publish an
+      event.</li><li><strong>Event channel or broker:</strong> infrastructure that transports events
+      and may route, buffer, and retain them. Depending on the technology, it can deliver events
+      through topics, queues, or streams.</li><li><strong>Event consumers:</strong> services that
+      subscribe to or otherwise receive events and perform independent processing, such as updating
+      a read model or sending a notification.</li><li><strong>Event schema and storage:</strong> the
+      agreed event structure and, where supported, retained event history that enables consumers to
+      process events reliably or catch up later.</li></ul><p>This approach reduces direct coupling:
+      a producer need not know which consumers exist, and new consumers can often be added without
+      changing the producer. It also supports asynchronous processing and independent scaling. The
+      trade-off is that the overall flow is less immediate and harder to reason about than a direct
+      call, so teams need clear event contracts and operational visibility.</p>
+  '1.1':
+    question: Describe the Monolithic architecture. What are its primary advantages and disadvantages?
+    status: ok
+    rounds: 1
+    lead: >-
+      A monolith packages the application’s user interface, business logic, and data-access code
+      into one deployable unit, often sharing a process and database. It is simple to develop and
+      operate initially, but changes, scaling, and failures can become tightly coupled as the system
+      grows.
+    body: >-
+      <p>In a monolithic architecture, most or all application capabilities are built and deployed
+      together. The code may still be organized into modules or layers, but the runtime and release
+      unit is the application as a whole.</p><p><strong>Advantages:</strong></p><ul><li>Simple local
+      development, testing, deployment, and debugging.</li><li>In-process calls are fast and avoid
+      distributed-system concerns such as network failures and message
+      coordination.</li><li>Transactions and data consistency can be easier when related
+      functionality uses one data store.</li><li>A small team can move quickly without managing many
+      independently deployed services.</li></ul><p><strong>Disadvantages:</strong></p><ul><li>The
+      codebase can become tightly coupled, making changes harder to understand and test.</li><li>A
+      small change may require rebuilding and redeploying the entire application.</li><li>Scaling is
+      usually coarse-grained: the whole application may need more capacity even when only one
+      capability is busy.</li><li>A defect, resource leak, or deployment problem can affect the
+      entire application.</li><li>As the team and codebase grow, ownership, release coordination,
+      and build times can become bottlenecks.</li></ul><div class="box tip"><b class="t">Strong way
+      to phrase it</b><p>A monolith is not automatically poorly designed. A well-modularized
+      monolith can be an effective starting point; the main risk is allowing its internal boundaries
+      to erode.</p></div>
+  '1.2':
+    question: >-
+      Explain the Microservices architecture. What are the key benefits and challenges compared to a
+      monolith?
+    status: ok
+    rounds: 1
+    lead: >-
+      Microservices decompose an application into small, independently owned services, each centered
+      on a business capability and communicating over explicit APIs or messages. They improve team
+      autonomy and targeted scaling, but add distributed-system complexity, operational overhead,
+      and harder consistency and testing than a monolith.
+    body: >-
+      <p>In a microservices architecture, each service is responsible for a focused business
+      capability, such as billing, inventory, or identity. Services communicate through stable
+      contracts, commonly HTTP APIs or messaging, and teams can own a service’s code, tests, and
+      often its data. The goal is meaningful autonomy rather than simply splitting one codebase into
+      many processes.</p><p><strong>Benefits compared with a monolith:</strong></p><ul><li>Teams can
+      change a capability with less coordination across the whole application.</li><li>A problem in
+      one service can be isolated instead of directly failing every capability.</li><li>Services can
+      be scaled or optimized according to their individual workload.</li><li>Teams may choose
+      technologies suited to a capability, where that flexibility is
+      justified.</li></ul><p><strong>Challenges:</strong></p><ul><li>Network calls introduce
+      latency, timeouts, partial failures, and difficult debugging.</li><li>Data ownership and
+      cross-service workflows make consistency and transactions harder.</li><li>Testing requires
+      contract, integration, and end-to-end coverage in addition to unit tests.</li><li>Each service
+      adds operational work: deployment automation, monitoring, logging, alerting, and
+      security.</li><li>Bad service boundaries can create chatty communication and distributed
+      coupling.</li></ul><div class="box trap"><b class="t">Common trap</b><p>Microservices are not
+      automatically better because they are smaller. A well-structured monolith can be simpler and
+      faster to evolve; microservices are most useful when independent ownership, scaling needs, or
+      organizational boundaries justify their added complexity.</p></div>
+  '1.3':
+    question: What is a Service-Oriented Architecture (SOA)? How does it differ from Microservices?
+    status: ok
+    rounds: 1
+    lead: >-
+      Service-Oriented Architecture structures an organization’s capabilities as reusable services
+      with explicit contracts, often emphasizing enterprise-wide integration and governance.
+      Microservices apply similar ideas with smaller, independently deployable services, usually
+      organized around bounded business contexts and operated with greater team and technology
+      autonomy.
+    body: >-
+      <p><strong>SOA</strong> decomposes a system into services that represent business
+      capabilities, such as customer management or invoicing. Each service exposes a stable contract
+      and hides its implementation, allowing different applications and teams to reuse it. SOA
+      commonly emphasizes enterprise integration, centralized governance, shared standards, and
+      sometimes an integration layer such as an enterprise service bus. Those are common practices,
+      not requirements of the architecture.</p><p><strong>Microservices</strong> also use
+      independently communicating services, but typically make the services smaller and aligned with
+      bounded business contexts. Each service is intended to be independently developed, deployed,
+      scaled, and operated. Microservice architectures usually favor decentralized ownership,
+      lightweight communication, and separate data ownership rather than a centrally governed
+      integration model.</p><ul><li><strong>Granularity:</strong> SOA services are often broader
+      enterprise capabilities; microservices are commonly narrower, though there is no universal
+      size.</li><li><strong>Governance:</strong> SOA often uses shared enterprise governance and
+      standards; microservices generally push more decisions to autonomous
+      teams.</li><li><strong>Integration:</strong> SOA may rely on centralized mediation;
+      microservices more often communicate directly through APIs or
+      messaging.</li><li><strong>Data:</strong> SOA may permit shared enterprise data or databases;
+      microservices usually aim for service-owned data.</li></ul><div class="box trap"><b
+      class="t">Common trap</b><p>SOA and microservices are not mutually exclusive labels.
+      Microservices can be viewed as a more strongly autonomous, independently deployable style of
+      service architecture; the real distinction depends on governance, ownership, deployment,
+      communication, and data boundaries.</p></div>
+  '2.2':
+    question: Describe the Publisher-Subscriber (Pub/Sub) pattern. How is it used in event-driven systems?
+    status: ok
+    rounds: 1
+    lead: >-
+      Pub/Sub lets publishers emit events to a broker without knowing who consumes them. Subscribers
+      register interest in a topic, and the broker delivers each matching event to one or more
+      subscribers, enabling decoupled, asynchronous communication and independent scaling.
+    body: >-
+      <p>In the Publisher-Subscriber pattern, a <strong>publisher</strong> produces an event, such
+      as <code>OrderPlaced</code>, and sends it to a broker or event bus rather than directly
+      calling a consumer. A <strong>subscriber</strong> declares interest in a topic, event type, or
+      subscription, and the broker routes matching events to it. The publisher therefore does not
+      need to know which services exist or how many consumers will process the event.</p><p>A
+      typical flow is:</p><ol><li>An order service publishes an <code>OrderPlaced</code>
+      event.</li><li>The broker stores or routes the event on an appropriate
+      topic.</li><li>Inventory, billing, notifications, and analytics services consume their own
+      subscriptions.</li></ol><p>This provides loose coupling, fan-out, and the ability to add
+      consumers without changing the publisher. Consumers can often process events asynchronously
+      and scale independently. It also supports integration between teams or services that evolve at
+      different speeds.</p><p>Operationally, the design must define delivery guarantees, retention,
+      replay behavior, and what happens when a consumer is unavailable. These details depend on the
+      messaging system; Pub/Sub itself does not guarantee ordering, exactly-once processing, or
+      durable delivery.</p><div class="box trap"><b class="t">Common trap</b><p>Pub/Sub is not
+      simply a shared queue. In classic competing-consumer queue semantics, one message is handled
+      by one worker; with separate Pub/Sub subscriptions, the same event can be delivered
+      independently to multiple subscribers.</p></div>
+  '3.1':
+    question: What is a Layered Architecture? Provide an example of how layers are typically organized.
+    status: ok
+    rounds: 1
+    lead: >-
+      A layered architecture organizes software into levels of responsibility, with each layer using
+      services from the layer below and exposing services to the layer above. A typical application
+      has presentation, application or business logic, and data-access layers.
+    body: >-
+      <p>A layered architecture separates an application by <strong>responsibility</strong>. Each
+      layer has a focused role and a defined interface, which helps developers change one concern
+      without affecting the whole system. In the common arrangement, dependencies point downward:
+      higher layers call lower layers, rather than reaching across the stack.</p><p>A typical web
+      application might be organized as:</p><ol><li><strong>Presentation layer:</strong> handles
+      HTTP requests, input validation at the boundary, and response
+      formatting.</li><li><strong>Application or domain layer:</strong> coordinates use cases and
+      contains business rules.</li><li><strong>Data-access layer:</strong> translates application
+      operations into queries or repository calls.</li><li><strong>Infrastructure layer:</strong>
+      provides database drivers, messaging clients, file storage, or external-service
+      adapters.</li></ol><p>For example, a request to create an order could be accepted by the
+      presentation layer, passed to an application service that checks business rules, sent through
+      a repository in the data-access layer, and ultimately persisted by infrastructure
+      code.</p><p>The main benefits are clear separation of concerns, easier testing, and
+      replaceable implementation details. The trade-off is that simple operations may pass through
+      several layers, and poorly enforced boundaries can produce duplicated logic or a large
+      “service” layer. The exact layers vary by language, framework, and system needs.</p>
+  '2.3':
+    question: >-
+      What are the trade-offs when choosing between synchronous and asynchronous communication in
+      distributed systems?
+    status: ok
+    rounds: 1
+    lead: >-
+      Synchronous communication is simpler and gives an immediate result, but it couples services in
+      availability, latency, and capacity. Asynchronous communication improves decoupling,
+      resilience, and throughput, but adds eventual consistency, operational complexity, and harder
+      failure handling; choose based on whether the caller needs a result immediately.
+    body: >-
+      <p><strong>Synchronous communication</strong> means the caller waits for the other service to
+      respond, commonly through a request-response API. It fits interactive operations that need an
+      immediate answer, such as validating a payment or reading current account data. It is usually
+      easier to reason about, test, trace, and expose to clients. The trade-off is runtime coupling:
+      the dependency must be reachable, its latency contributes to the caller’s latency, and
+      failures can propagate through call chains. Timeouts, retries, and circuit breakers are
+      important, but they also require careful design.</p><p><strong>Asynchronous
+      communication</strong> lets the caller submit work and continue without waiting for
+      completion. It can absorb traffic spikes, improve isolation between services, and support
+      background or long-running work. Producers and consumers can often scale independently, and a
+      temporary consumer outage need not immediately block the producer. The costs are delayed
+      results, more complicated status reporting, eventual consistency, and more difficult debugging
+      and operations. The system also needs an explicit approach to delivery failures and safe
+      retries.</p><p>A practical rule is to use synchronous calls for short, user-facing queries or
+      commands where the result determines the next step, and asynchronous communication for
+      workflows that can complete later, tolerate delay, or benefit from buffering and loose
+      coupling. Many systems combine both: accept a command synchronously, then perform downstream
+      work asynchronously and expose progress or completion separately.</p><div class="box trap"><b
+      class="t">Common trap</b><p>Asynchronous does not automatically mean faster or more reliable.
+      It shifts waiting and failure handling into queues, workers, status tracking, and recovery
+      logic.</p></div>
+  '2.4':
+    question: >-
+      Discuss potential challenges like event ordering, idempotency, and dead-letter queues in an
+      event-driven system.
+    status: ok
+    rounds: 1
+    lead: >-
+      Event-driven systems must explicitly handle delivery realities: events can arrive late, out of
+      order, or more than once. I design consumers to be idempotent, define ordering only where the
+      business needs it, and use dead-letter queues as an observable, recoverable path for messages
+      that repeatedly fail.
+    body: >-
+      <p>These concerns are related to the delivery guarantee. Many brokers and consumers provide
+      <em>at-least-once</em> delivery, so a retry can produce duplicates. End-to-end exactly-once
+      behavior is difficult because consuming an event and committing an external side effect are
+      usually separate operations.</p><ul><li><strong>Event ordering:</strong> Global ordering is
+      expensive and often unnecessary. Define the required scope, such as ordering per account or
+      order, then route related events using a stable key or partition. Consumers may still need to
+      tolerate late events by checking a sequence number, version, or event timestamp. Retries and
+      multiple consumers can make naive ordering assumptions
+      unsafe.</li><li><strong>Idempotency:</strong> Processing the same event twice should not
+      change the result twice. A consumer can use a durable event ID or business idempotency key,
+      stored with the processing result, and reject already-completed work. Where possible, use
+      naturally idempotent operations, such as setting a state rather than incrementing it. The
+      deduplication record and the business update must be coordinated transactionally, or a crash
+      can leave either one committed without the other.</li><li><strong>Dead-letter queues:</strong>
+      After bounded retries, send a poison message to a DLQ with its original payload, headers,
+      error, and attempt history. Monitor the queue and alert on growth; otherwise failures become
+      silent data loss. Operators should diagnose the cause, fix the consumer or data, and replay
+      deliberately, with idempotency still enforced.</li></ul><div class="box trap"><b
+      class="t">Common trap</b><p>A DLQ is not a substitute for handling failures. Retrying a
+      permanent validation error indefinitely blocks progress, while blindly replaying a transient
+      failure can duplicate side effects.</p></div>
+  '3.3':
+    question: Describe the Model-View-Controller (MVC) pattern. How does it promote separation of concerns?
+    status: ok
+    rounds: 1
+    lead: >-
+      MVC separates an application into the model, view, and controller: the model owns data and
+      business rules, the view presents output, and the controller handles input and coordinates the
+      two. This isolates UI concerns from application logic, making each part easier to test,
+      change, and maintain.
+    body: >-
+      <p><strong>Model-View-Controller (MVC)</strong> divides an application into three
+      collaborating responsibilities:</p><ul><li><strong>Model:</strong> represents application data
+      and domain behavior. It applies business rules and may coordinate persistence, but it should
+      not depend on presentation details.</li><li><strong>View:</strong> renders the model’s state
+      for a user or client, such as an HTML page, screen, or response. It should avoid containing
+      substantial business logic.</li><li><strong>Controller:</strong> receives input, such as an
+      HTTP request or UI action, validates or interprets it, invokes the appropriate model
+      operations, and selects or prepares the view response.</li></ul><p>A typical request flows
+      from the user to the controller, then to the model; the controller supplies the resulting
+      state to a view, which renders the response. The exact flow varies by framework: some use
+      two-way observation between views and models, while server-side MVC commonly has a controller
+      explicitly prepare a view model.</p><p>The separation of concerns means a presentation
+      change—for example, adding a different view—does not require rewriting domain rules. It also
+      supports focused testing: models can be tested without a UI, controllers can be tested for
+      coordination, and views can be checked for rendering.</p><div class="box trap"><b
+      class="t">Common trap</b><p>MVC is not a guarantee that code is well-factored. Controllers can
+      become “fat” if business rules accumulate there; those rules should normally remain in domain
+      or application services owned by the model side.</p></div>
+  '3.2':
+    question: >-
+      Explain the Client-Server architecture. What are the main responsibilities of the client and
+      server?
+    status: ok
+    rounds: 1
+    lead: >-
+      Client-server architecture separates requesters from providers: the client handles the
+      user-facing experience and sends requests, while the server applies shared rules, accesses
+      protected resources, and returns responses. Multiple clients can use the same server-managed
+      data and capabilities.
+    body: >-
+      <p>In a client-server architecture, clients and servers have distinct roles and communicate
+      over a network using an agreed protocol. A client typically initiates a request, presents
+      results, gathers user input, manages client-side state, and may perform lightweight validation
+      or caching. It should not be treated as the final authority for security or shared business
+      rules.</p><p>The server receives requests, authenticates and authorizes callers, validates
+      inputs, applies business logic, manages shared data or other protected resources, and returns
+      results or errors. It is also responsible for enforcing consistency, auditing where required,
+      and handling concurrent requests. Servers may be stateful or stateless; that choice affects
+      scaling, recovery, and session management but is not inherent to the pattern.</p><p>A typical
+      interaction is:</p><pre><code>Client  -- request --&gt;  Server<br>Client  &lt;-- response -- 
+      Server</code></pre><p>This separation centralizes access control and shared data, simplifies
+      updates to common rules, and lets different clients—such as web, mobile, or command-line
+      clients—use the same services. The trade-offs are network latency, dependence on server
+      availability, and the need to handle timeouts, retries, and partial failures.</p><div
+      class="box trap"><b class="t">Common trap</b><p>Do not define the server as merely a database.
+      It normally owns the authoritative rules and resource access, while the client is an untrusted
+      consumer of the server’s interface.</p></div>
+  '4.1':
+    question: >-
+      What is the difference between a Monolith and a Microservices architecture in terms of
+      deployment and scalability?
+    status: ok
+    rounds: 1
+    lead: >-
+      A monolith is deployed and usually scaled as one application, so changing or capacity-planning
+      one part often involves the whole system. Microservices are separately deployable services,
+      allowing each service to be released and scaled independently, at the cost of more
+      distributed-system coordination.
+    body: >-
+      <p>The key difference is the <strong>deployment unit</strong> and the resulting scaling
+      boundary:</p><ul><li><strong>Monolith:</strong> the application is packaged and deployed as
+      one unit. Even if its internal code has separate modules, a change to one module commonly
+      requires rebuilding and redeploying the whole application. When one function needs more
+      capacity, the usual approach is to run additional instances of the entire
+      application.</li><li><strong>Microservices:</strong> the system is split into independently
+      deployable services, each responsible for a focused capability. A team can release one service
+      without deploying unrelated services, and a heavily used service can be scaled without scaling
+      every other part.</li></ul><p>This does not mean microservices always scale better.
+      Independent scaling is useful when workloads differ, but it introduces network calls, service
+      discovery, deployment coordination, observability needs, and failure modes that do not exist
+      inside a single process. A well-structured monolith can be simpler and sufficiently scalable;
+      microservices are most valuable when independent delivery or scaling boundaries justify the
+      operational cost.</p><div class="box trap"><b class="t">Common trap</b><p>Do not equate
+      “monolith” with “cannot scale” or “microservices” with “automatically scalable.” The
+      distinction is primarily how the system is partitioned and deployed; actual scalability
+      depends on workload, bottlenecks, and implementation.</p></div>
+  '3.4':
+    question: Discuss the CAP theorem. How does it influence the design of distributed data stores?
+    status: ok
+    rounds: 1
+    lead: >-
+      CAP says that when a network partition occurs, a distributed data store cannot simultaneously
+      guarantee linearizable consistency and availability. Because partitions are unavoidable, a
+      design must choose whether to reject or delay some requests for consistency, or accept
+      responses that may be temporarily stale for availability.
+    body: >-
+      <p>The CAP theorem concerns three properties:</p><ul><li><strong>Consistency:</strong> every
+      read observes the latest successful write, as if there were one current copy of the
+      data.</li><li><strong>Availability:</strong> every request to a non-failed node receives a
+      successful response, without waiting indefinitely for other nodes.</li><li><strong>Partition
+      tolerance:</strong> the system continues operating despite lost, delayed, or split network
+      communication between nodes.</li></ul><p>The important qualification is that the trade-off
+      appears <em>during a partition</em>. Since a distributed system cannot reliably prevent
+      partitions, practical designs normally choose partition tolerance and then decide how to
+      behave when replicas cannot communicate. A <strong>CP</strong> store preserves strong
+      consistency by rejecting, blocking, or limiting operations that cannot be safely coordinated.
+      An <strong>AP</strong> store continues serving requests, potentially returning stale or
+      conflicting values, and reconciles them later according to its data model.</p><p>This choice
+      affects replication, quorum rules, leader election, failover, conflict resolution, read and
+      write guarantees, and application behavior. A system handling account balances or uniqueness
+      constraints may prefer consistency and explicit failure. A system serving cached or social
+      data may prefer availability and tolerate temporary staleness. The choice can also vary by
+      operation or data type rather than applying to the entire product.</p><div class="box trap"><b
+      class="t">Common trap</b><p>CAP does not mean a system permanently chooses only two of the
+      three properties, nor does “consistent” merely mean replicas eventually converge. It describes
+      the guarantee available when a partition prevents coordination.</p></div>
+  '4.3':
+    question: What is a Peer-to-Peer (P2P) architecture? Compare it to a Client-Server model.
+    status: ok
+    rounds: 1
+    lead: >-
+      <strong>Peer-to-peer architecture</strong> is a decentralized model where participating nodes
+      can both request and provide resources, without relying on one central server. Compared with
+      client-server, it can improve resilience and distribute load, but it makes discovery,
+      security, consistency, and coordination more difficult.
+    body: >-
+      <p>In a P2P system, nodes are peers: each may act as a client for one operation and a server
+      for another. Resources or responsibilities are distributed across the participating nodes
+      rather than being concentrated in a dedicated server tier. Peers may discover one another
+      through a directory, a bootstrap node, or a distributed lookup mechanism.</p><p>Compared with
+      client-server:</p><ul><li><strong>Control:</strong> client-server centralizes coordination and
+      policy; P2P distributes them.</li><li><strong>Scaling:</strong> client-server can bottleneck
+      at the server, while P2P can add capacity as peers join, although coordination overhead may
+      grow.</li><li><strong>Availability:</strong> a P2P system can continue despite individual peer
+      failures, but only if data is replicated and peers can be
+      discovered.</li><li><strong>Management:</strong> central servers are generally easier to
+      secure, monitor, update, and govern. P2P must handle untrusted or unreliable
+      participants.</li><li><strong>Consistency:</strong> centralized systems often simplify
+      authoritative state; P2P systems need explicit conflict resolution, replication, and
+      membership rules.</li></ul><p>Examples include file-sharing networks, distributed ledgers, and
+      some real-time communication systems. Many production systems are hybrid: centralized services
+      handle identity, indexing, or coordination while peers exchange data directly.</p><div
+      class="box trap"><b class="t">Common trap</b><p>P2P does not mean that every node is identical
+      or that there is no infrastructure. It means the resource-serving role is distributed; a
+      system can still use bootstrap services or centralized control-plane components.</p></div>
+  '4.2':
+    question: Describe the Strangler Fig pattern. When is it a suitable approach for system modernization?
+    status: ok
+    rounds: 1
+    lead: >-
+      The Strangler Fig pattern modernizes a system incrementally: place a controlled entry point in
+      front of the legacy application, redirect selected capabilities to new components, and retire
+      the old paths as they are replaced. It suits large, business-critical systems where a risky
+      all-at-once rewrite is impractical.
+    body: >-
+      <p>The pattern is named after a strangler fig, which gradually grows around and replaces its
+      host. In software, a routing layer, facade, or gateway lets the legacy system and new
+      implementation coexist. The team selects a bounded capability, builds its replacement, routes
+      that capability to the new implementation, and repeats until the remaining legacy surface can
+      be removed.</p><p>It is suitable when:</p><ul><li>The existing system is too valuable or risky
+      to take offline for a rewrite.</li><li>Modernization can be divided into independently
+      testable business capabilities.</li><li>The organization needs incremental delivery, rollback,
+      and learning from production use.</li><li>There is a practical way to control traffic and keep
+      behavior consistent during coexistence.</li></ul><p>The approach still requires careful
+      handling of data ownership, authentication, observability, and interactions between old and
+      new code. Teams should define which system is authoritative for each piece of data and avoid
+      allowing the routing layer to become a permanent, unmaintainable monolith. Contract and
+      regression tests help prove that the replacement preserves required behavior.</p><div
+      class="box trap"><b class="t">Common trap</b><p>It is not simply placing a proxy in front of a
+      legacy application. The modernization succeeds only when capabilities are deliberately moved,
+      validated, and eventually removed from the old system.</p></div>
+  '4.4':
+    question: >-
+      How might you combine different architectural patterns, such as Microservices with an
+      Event-Driven approach, to build a robust system?
+    status: ok
+    rounds: 1
+    lead: >-
+      Use microservices for independently owned business capabilities, and let them publish domain
+      events through a broker when state changes. Keep direct synchronous calls for immediate
+      queries or commands, while consumers react asynchronously, accepting eventual consistency and
+      designing explicitly for retries and failures.
+    body: >-
+      <p>A practical hybrid gives each service ownership of its code and data, while events provide
+      loose coupling between services. For example, an Order service can commit an order and publish
+      <code>OrderPlaced</code>; Inventory, Payments, and Notifications consume that event
+      independently. None of those consumers needs to know the internal implementation of the Order
+      service.</p><pre><code>Client -&gt; Order service: place order
+
+      Order service -&gt; broker: OrderPlaced
+
+      Inventory, Payments, Notifications -&gt; consume independently</code></pre><p>Use synchronous
+      communication when the caller needs an immediate answer, such as validating a request or
+      reading current data. Use asynchronous events for reactions that can complete later,
+      cross-service workflows, and integrations where temporary unavailability should not block the
+      original request.</p><ul><li><strong>Define ownership:</strong> each service owns its data and
+      publishes meaningful domain events rather than exposing database tables.</li><li><strong>Make
+      delivery reliable:</strong> publish an event consistently with the state change, commonly
+      through a transactional outbox or an equivalent mechanism.</li><li><strong>Design consumers
+      for repetition:</strong> handlers should be idempotent, and failures should be retried or
+      isolated without stopping unrelated consumers.</li><li><strong>Model workflows
+      explicitly:</strong> use a coordinator or event-based saga when several services must
+      collaborate and compensating actions are needed.</li><li><strong>Operate the system as a
+      whole:</strong> include correlation identifiers, tracing, metrics, schema compatibility,
+      access control, and clear ownership of events.</li></ul><div class="box trap"><b
+      class="t">Common trap</b><p>Adding a broker does not remove distributed-systems complexity.
+      The design must state whether each operation is eventually consistent, what happens when a
+      consumer is unavailable, and how users learn that a long-running workflow has completed or
+      failed.</p></div>
