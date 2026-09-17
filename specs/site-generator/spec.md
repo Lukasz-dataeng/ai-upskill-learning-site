@@ -2,7 +2,7 @@
 
 Status: **implemented**, matches the code in [`scripts/build.mjs`](../../scripts/build.mjs) as of this writing. This is the project's spec-driven functionality — written and used to check the implementation against, not written after the fact to describe it.
 
-![Architecture: data/*.yaml and template/ feed into build.mjs, which validates and renders dist/, deployed to Cloudflare Pages. A dashed future path shows bare questions going through EPAM DIAL / Azure AI Foundry back into the data.](architecture.png)
+![Architecture: a topic title goes through the content agents into data/*.yaml, which build.mjs validates and renders into dist/, served by Cloudflare Pages behind a login. The agents call EPAM DIAL, reachable only over the EPAM VPN, and the mock interview runs on a local server beside it. A dashed box marks hosting the whole thing on AWS as planned, not built.](architecture.png)
 
 ## 1. Purpose
 
