@@ -46,9 +46,10 @@ npx wrangler pages deploy dist --project-name=ai-upskill-learning-site
 echo "==> Verifying the live site"
 sleep 2
 # The site sits behind Cloudflare Access, so an anonymous request is expected
-# to be redirected to the Access login page. That redirect, or a plain 200 if
-# the gate is ever removed, means the site is up. Anything else does not.
-read -r CODE LOCATION < <(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" https://ai-upskill-learning-site.pages.dev/)
+# to be redirected to the Access login page. A 200 means the gate is off, which
+# is a failure too. The trailing \n matters: without it read returns non-zero
+# and set -e ends the script without a word.
+read -r CODE LOCATION < <(curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" https://ai-upskill-learning-site.pages.dev/)
 if [ "$CODE" = "302" ] && [[ "$LOCATION" == https://*.cloudflareaccess.com/* ]]; then
   echo "==> Live, behind Cloudflare Access: https://ai-upskill-learning-site.pages.dev (HTTP 302 to the login page)"
 elif [ "$CODE" = "200" ]; then
