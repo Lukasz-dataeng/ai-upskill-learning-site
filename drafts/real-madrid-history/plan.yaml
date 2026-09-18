@@ -1,0 +1,94 @@
+# Plan for a generated deck. Stop 1: edit freely before answering "y".
+# Change, add or remove questions; tier is Foundational, Intermediate or Deep-dive.
+# New questions need no id. Removing a section renumbers the ones after it.
+deck: real-madrid-history
+title: Real Madrid History
+description: >-
+  A study deck covering key eras, iconic players, and significant achievements in the history of
+  Real Madrid Football Club.
+sections:
+  - id: s1
+    title: Early Years and Foundation
+    summary: Covers the establishment of the club and its initial decades of competition.
+    questions:
+      - id: '1.1'
+        tier: Foundational
+        question: When was Real Madrid founded and what was its original name?
+      - id: '1.2'
+        tier: Foundational
+        question: >-
+          Who were some of the key figures involved in the early development and naming of Real
+          Madrid?
+      - id: '1.3'
+        tier: Intermediate
+        question: >-
+          What was Real Madrid's performance like in the early editions of the Copa del Rey and La
+          Liga?
+  - id: s2
+    title: The Santiago Bernabéu Era and European Dominance
+    summary: >-
+      Focuses on the mid-20th century, marked by the construction of the stadium and unprecedented
+      European success.
+    questions:
+      - id: '2.1'
+        tier: Foundational
+        question: Who was Santiago Bernabéu and what was his impact on the club?
+      - id: '2.2'
+        tier: Intermediate
+        question: >-
+          Describe the significance of Real Madrid's five consecutive European Cup titles in the
+          1950s.
+      - id: '2.3'
+        tier: Intermediate
+        question: >-
+          Who were some of the star players that formed the legendary team of the 1950s and early
+          1960s?
+      - id: '2.4'
+        tier: Deep-dive
+        question: How did the 'Yé-yé' generation build upon the legacy of the Di Stéfano era?
+  - id: s3
+    title: La Liga Dominance and Shifting Tides
+    summary: >-
+      Examines the club's consistent domestic success alongside challenges and changes in European
+      competitions.
+    questions:
+      - id: '3.1'
+        tier: Foundational
+        question: >-
+          What is Real Madrid's record in winning La Liga titles, and which decades were
+          particularly dominant?
+      - id: '3.2'
+        tier: Intermediate
+        question: Discuss the 'Quinta del Buitre' and its impact on Real Madrid in the 1980s.
+      - id: '3.3'
+        tier: Intermediate
+        question: >-
+          What were some of the major challenges Real Madrid faced in European competitions during
+          the 1970s and 1980s?
+      - id: '3.4'
+        tier: Deep-dive
+        question: >-
+          How did the club navigate the transition from the 'Quinta del Buitre' era to the early
+          years of the Florentino Pérez presidency?
+  - id: s4
+    title: The Galácticos and the Modern Era
+    summary: >-
+      Details the club's global brand expansion, the 'Galácticos' policy, and continued success in
+      the 21st century.
+    questions:
+      - id: '4.1'
+        tier: Foundational
+        question: What was the 'Galácticos' policy initiated by Florentino Pérez?
+      - id: '4.2'
+        tier: Intermediate
+        question: Who were some of the most prominent players signed during the 'Galácticos' era?
+      - id: '4.3'
+        tier: Intermediate
+        question: >-
+          How has Real Madrid adapted to the modern era of football, particularly in terms of
+          commercialization and global reach?
+      - id: '4.4'
+        tier: Deep-dive
+        question: >-
+          Analyze the success and criticisms of the 'Galácticos' approach, considering both sporting
+          and financial aspects.

@@ -1,0 +1,399 @@
+# Answers cache for the topic pipeline. Edit the plan, not this file.
+answers:
+  '1.1':
+    question: When was Real Madrid founded and what was its original name?
+    status: ok
+    rounds: 1
+    lead: >-
+      Real Madrid was officially founded on 6 March 1902 as <strong>Madrid Football Club</strong>.
+      It adopted the name <strong>Real Madrid</strong> in 1920, after King Alfonso XIII granted the
+      club the title “Real,” meaning royal.
+    body: >-
+      <p>Real Madrid’s official foundation is generally dated to <strong>6 March 1902</strong>, when
+      the club’s statutes were formally established and Madrid Football Club began competing as an
+      organized association. Football had already been played in Madrid by earlier groups, so the
+      club’s broader roots reach back to the late nineteenth century, but 1902 is the accepted
+      founding date.</p><p>The original name was <strong>Madrid Football Club</strong>. In 1920,
+      King Alfonso XIII granted the club the honorific title <em>Real</em>, meaning “Royal,” and the
+      name became <strong>Real Madrid</strong>. The crown was also added to the club’s crest. The
+      title was temporarily removed during Spain’s republican period and restored after the monarchy
+      returned.</p><div class="box trap"><b class="t">Common trap</b><p>Do not describe the club as
+      having been founded under the name Real Madrid. Its formal original name was Madrid Football
+      Club; “Real” was added later.</p></div>
+  '2.1':
+    question: Who was Santiago Bernabéu and what was his impact on the club?
+    status: ok
+    rounds: 1
+    lead: >-
+      Santiago Bernabéu was Real Madrid’s long-serving president from 1943 until 1978 and a former
+      player and club official. He transformed Madrid into a modern institution by building its
+      great stadium, strengthening its organization, and creating the foundations for the club’s
+      rise as a dominant force in European football.
+    body: >-
+      <p>Santiago Bernabéu de Yeste was closely connected with Real Madrid for much of his life: he
+      played for the club, held administrative roles, and became president in 1943. His presidency
+      lasted until his death in 1978.</p><p>His impact was both <strong>institutional</strong> and
+      <strong>sporting</strong>:</p><ul><li>He led the construction of the club’s major new stadium,
+      opened in 1947 as Nuevo Chamartín. It was later renamed the Santiago Bernabéu Stadium in his
+      honor.</li><li>He helped professionalize the club’s administration and gave it the facilities
+      and financial scale needed to compete at the highest level.</li><li>He supported an ambitious
+      recruitment strategy, bringing elite talent to Madrid and helping create the team that made
+      the club a leading force in European football.</li><li>He backed the European Cup project and
+      understood that international competition could raise Real Madrid’s profile far beyond
+      Spain.</li></ul><p>Bernabéu therefore shaped more than a successful team: he established the
+      stadium, structure, ambition, and international outlook associated with modern Real Madrid.
+      The club’s mid-century European rise is commonly described as the central achievement of his
+      presidency.</p>
+  '1.3':
+    question: What was Real Madrid's performance like in the early editions of the Copa del Rey and La Liga?
+    status: ok
+    rounds: 1
+    lead: >-
+      Real Madrid made an immediate mark in Spain’s cup competition, winning four consecutive
+      editions from 1905 to 1908. In La Liga, founded in 1929, they were competitive from the start
+      and won their first two championships in 1931–32 and 1932–33.
+    body: >-
+      <p>In the early <em>Campeonato de España</em>, later commonly known as the Copa del Rey,
+      Madrid FC quickly became a leading club. They won the competition four times in succession
+      from 1905 through 1908, establishing a pattern of domestic success before the league existed.
+      They added another cup triumph in 1917.</p><p>La Liga began in 1929. Real Madrid were among
+      the original participants and finished as runners-up in the inaugural season, showing that
+      they could compete at the highest national level immediately. The club then won its first
+      league title in 1931–32, completing the campaign unbeaten, and successfully defended it in
+      1932–33.</p><p>So, the early record was one of rapid emergence rather than uninterrupted
+      dominance: strong cup results in the club’s first years, followed by an early league
+      breakthrough and back-to-back championships. Those achievements gave Real Madrid an important
+      domestic foundation before the club’s later international prominence.</p><div class="box
+      trap"><b class="t">Common trap</b><p>Do not describe the early cup as the modern league.
+      Before La Liga began, Spain’s main national competition was the Campeonato de España, whose
+      naming and presentation changed over time.</p></div>
+  '2.2':
+    question: Describe the significance of Real Madrid's five consecutive European Cup titles in the 1950s.
+    status: ok
+    rounds: 1
+    lead: >-
+      Real Madrid’s five straight European Cups from 1956 to 1960 established the club as Europe’s
+      first dominant force in the competition. The run gave Madrid an enduring international
+      identity and set a standard of continental success that became central to the club’s history.
+    body: >-
+      <p>The achievement was significant because Real Madrid won the first five editions of the
+      European Cup, turning a new international tournament into the foundation of the club’s global
+      reputation. The victories showed sustained excellence rather than a single successful season:
+      Madrid repeatedly adapted to different opponents and high-pressure knockout
+      ties.</p><ul><li><strong>European prestige:</strong> The run made Real Madrid synonymous with
+      elite continental football and helped distinguish it from clubs whose success was mainly
+      domestic.</li><li><strong>Institutional impact:</strong> It strengthened the club’s
+      international profile, attracting supporters and enhancing its appeal to leading
+      players.</li><li><strong>Competitive benchmark:</strong> Winning every edition through 1960
+      created a standard against which later Real Madrid teams—and other European clubs—were
+      measured.</li><li><strong>Historical legacy:</strong> The streak became the defining
+      achievement of the early European Cup era and remains a central explanation for the club’s
+      tradition of prioritizing success in Europe.</li></ul><p>It is also important to describe the
+      achievement precisely: the first final was played in 1956, while the fifth was won in 1960. So
+      “five consecutive titles in the 1950s” is common shorthand, but the sequence extended into
+      1960.</p><div class="box trap"><b class="t">Common trap</b><p>Do not present the run as five
+      league titles or as victories all completed during the 1950s. It was a five-season European
+      Cup sequence, spanning 1955–56 through 1959–60.</p></div>
+  '2.3':
+    question: Who were some of the star players that formed the legendary team of the 1950s and early 1960s?
+    status: ok
+    rounds: 1
+    lead: >-
+      The core of Real Madrid’s legendary 1950s and early-1960s side included Alfredo Di Stéfano,
+      Ferenc Puskás, Francisco Gento, Raymond Kopa, Héctor Rial, José María Zárraga, and Miguel
+      Muñoz, supported by defenders such as Marquitos and José Santamaría.
+    body: >-
+      <p>The team was built around several exceptional players whose roles complemented one
+      another:</p><ul><li><strong>Alfredo Di Stéfano</strong> was the complete attacking leader: he
+      scored, created chances, and often dropped deep to influence the whole
+      game.</li><li><strong>Ferenc Puskás</strong> joined later in the decade and supplied elite
+      finishing, especially with his powerful left foot.</li><li><strong>Francisco Gento</strong>
+      provided speed and width on the left wing, becoming one of the era’s defining
+      players.</li><li><strong>Raymond Kopa</strong> added close control, dribbling, and creativity,
+      particularly during his years at the club in the late 1950s.</li><li><strong>Héctor
+      Rial</strong> was an intelligent forward and creator, while <strong>José María
+      Zárraga</strong> and <strong>Miguel Muñoz</strong> gave the midfield leadership and
+      balance.</li><li>In defense, <strong>Marquitos</strong> and <strong>José Santamaría</strong>
+      were important figures, with goalkeepers such as <strong>Juan Alonso</strong> also
+      contributing to the side’s strength.</li></ul><p>It was not one unchanging lineup: Kopa
+      belonged mainly to the earlier part of the period, Puskás arrived in the late 1950s, and the
+      squad evolved into the early 1960s. That combination of individual brilliance, tactical
+      flexibility, and experienced leadership made the side so influential.</p>
+  '1.2':
+    question: Who were some of the key figures involved in the early development and naming of Real Madrid?
+    status: rejected
+    rounds: 2
+    problems:
+      - >-
+        lead is too long: please condense the lead to stay within 300 characters while maintaining
+        the answer.
+  '2.4':
+    question: How did the 'Yé-yé' generation build upon the legacy of the Di Stéfano era?
+    status: ok
+    rounds: 1
+    lead: >-
+      The Yé-yé generation converted the Di Stéfano era’s European standard into a home-grown
+      Spanish team. With a younger core such as Amancio, Pirri, Zoco and Grosso, they sustained
+      domestic dominance and won the 1966 European Cup, showing that Madrid’s identity could outlast
+      its original superstars.
+    body: >-
+      <p>The Di Stéfano era established Real Madrid’s expectations: proactive football, technical
+      quality, winning mentality and the belief that the club should compete for Europe every
+      season. When Di Stéfano departed in the mid-1960s, Madrid did not simply replace him with
+      another collection of foreign stars. It developed a younger, predominantly Spanish group that
+      had learned inside the club’s competitive culture.</p><ul><li><strong>A new core:</strong>
+      players such as Amancio, Pirri, Zoco, Grosso and Manuel Velázquez gave the team energy,
+      versatility and a stronger domestic identity. The nickname “Yé-yé” reflected the group’s
+      youthful image and its association with contemporary popular
+      culture.</li><li><strong>Continuity at home:</strong> the generation kept Madrid near the top
+      of Spanish football and won a series of league titles, proving that the end of the first
+      European dynasty was not an institutional collapse.</li><li><strong>European
+      validation:</strong> their defining achievement was the 1966 European Cup victory over
+      Partizan. It was the club’s sixth European Cup, but unlike the earlier triumphs, it was won
+      without the central figures of the Di Stéfano-led side.</li><li><strong>A changed
+      model:</strong> they preserved the standards and ambition of the earlier team while relying
+      more on internal development and a collective structure than on a single dominant
+      playmaker.</li></ul><p>So their importance was not that they duplicated Di Stéfano’s football
+      exactly. They demonstrated that his legacy had become part of Madrid’s culture, allowing a new
+      generation to renew the team and win Europe on its own terms.</p><div class="box tip"><b
+      class="t">Strong phrasing</b><p>“The Yé-yé side was a succession, not a replica: it inherited
+      the winning standards of the Di Stéfano era while creating a more home-grown
+      identity.”</p></div>
+  '3.1':
+    question: >-
+      What is Real Madrid's record in winning La Liga titles, and which decades were particularly
+      dominant?
+    status: ok
+    rounds: 1
+    lead: >-
+      Real Madrid hold the Spanish record with <strong>36 La Liga titles</strong>. Their most
+      dominant decade was the 1960s, when they won eight championships, followed by five consecutive
+      titles in the late 1980s.
+    body: >-
+      <p>Real Madrid have won <strong>36 La Liga titles</strong>, the most in Spanish football, with
+      their latest title coming in the 2023–24 season. Their domestic record has been built through
+      several distinct periods rather than one uninterrupted run.</p><ul><li><strong>1960s:</strong>
+      eight titles, including five in succession from 1960–61 through
+      1964–65.</li><li><strong>1980s:</strong> five consecutive titles from 1985–86 through 1989–90,
+      one of the club’s strongest modern league runs.</li><li><strong>Early 1960s and late
+      1960s:</strong> the club combined sustained league consistency with repeated domestic success
+      after its first great European era.</li><li><strong>Recent decades:</strong> Madrid have
+      continued to win titles despite stronger competition, including championships in 2011–12,
+      2016–17, 2019–20, 2021–22, and 2023–24.</li></ul><p>The key point is that Madrid’s record
+      reflects both long periods of dominance—especially the 1960s and late 1980s—and the ability to
+      return to the top across different generations.</p><div class="box trap"><b class="t">Common
+      trap</b><p>Do not confuse the number of La Liga titles with the club’s European Cup or
+      Champions League total; they are separate competitions and records.</p></div>
+  '3.2':
+    question: Discuss the 'Quinta del Buitre' and its impact on Real Madrid in the 1980s.
+    status: ok
+    rounds: 1
+    lead: >-
+      The “Quinta del Buitre” was a group of five academy-developed players—Butragueño, Sanchís,
+      Martín Vázquez, Míchel and Pardeza—who became the core of Real Madrid in the 1980s. They
+      restored domestic dominance, won five consecutive La Liga titles, and strengthened the club’s
+      identity around homegrown talent.
+    body: >-
+      <p>The name <em>Quinta del Buitre</em> came from Emilio Butragueño’s nickname, <em>El
+      Buitre</em>, and referred to five players who emerged from Real Madrid’s youth system: Emilio
+      Butragueño, Manolo Sanchís, Rafael Martín Vázquez, Míchel, and Miguel Pardeza. They did not
+      all remain at the club for the same length of time, but together they represented a remarkable
+      generation of academy talent.</p><p>Their impact was both sporting and
+      cultural:</p><ul><li>They became central figures in a team that won five consecutive La Liga
+      titles from 1985–86 through 1989–90.</li><li>Their technical quality, movement, and confidence
+      helped give Real Madrid an attractive attacking identity.</li><li>They demonstrated that the
+      club’s youth system could produce players capable of carrying a major team, reinforcing the
+      importance of <em>La Fábrica</em>.</li><li>They helped restore Real Madrid’s sense of domestic
+      authority after a less consistent period.</li></ul><p>The team also won back-to-back UEFA Cups
+      in the mid-1980s, creating memorable European comebacks and a strong continental reputation.
+      However, the generation did not win the European Cup, which was the main limitation of its
+      legacy. Real Madrid reached the latter stages but repeatedly fell short against elite
+      opposition. Overall, the Quinta del Buitre combined sustained domestic success with a powerful
+      homegrown identity.</p><div class="box trap"><b class="t">Common trap</b><p>Do not describe
+      the Quinta as five players who all had identical careers at Real Madrid. Pardeza left earlier,
+      while Sanchís and Butragueño remained especially important long-term symbols of the
+      generation.</p></div>
+  '3.3':
+    question: >-
+      What were some of the major challenges Real Madrid faced in European competitions during the
+      1970s and 1980s?
+    status: ok
+    rounds: 1
+    lead: >-
+      Real Madrid’s main European challenge in the 1970s was rebuilding after the first great
+      generation while facing increasingly strong, tactically sophisticated opponents. In the 1980s,
+      the club regained continental credibility through UEFA Cup wins, but repeated European Cup
+      defeats to elite English, German, Dutch, and Italian sides showed that domestic strength did
+      not automatically translate into the top European title.
+    body: >-
+      <p>Real Madrid entered the 1970s after the decline of the team that had dominated the first
+      European Cup era. Rebuilding the squad and maintaining continuity proved difficult, while
+      clubs such as Bayern Munich, Liverpool, Nottingham Forest, and later Milan developed highly
+      competitive teams. The European Cup’s knockout format also made the margins small: one poor
+      away performance, a difficult draw, or a narrow defeat could end a campaign.</p><p>During the
+      1970s, Madrid remained an important club but lacked the sustained European consistency of the
+      1950s and early 1960s. Their domestic success was not always matched by progress in the
+      European Cup, and the club often fell short against more settled or physically and tactically
+      advanced opponents.</p><p>The 1980s brought improvement. Madrid won consecutive UEFA Cups in
+      the middle of the decade, demonstrating that the club had rebuilt a strong team. However, the
+      European Cup was a tougher test. The side repeatedly reached the later rounds but was
+      eliminated by leading opponents, including Bayern Munich, PSV Eindhoven, and Milan. These
+      defeats highlighted the gap between being a powerful national champion and being the best team
+      in Europe.</p><div class="box trap"><b class="t">Common trap</b><p>Do not describe the 1970s
+      and 1980s as a period of European failure. Real Madrid won major UEFA Cup trophies; the more
+      precise point is that the club struggled to convert its revival into another European Cup
+      victory.</p></div>
+  '4.1':
+    question: What was the 'Galácticos' policy initiated by Florentino Pérez?
+    status: ok
+    rounds: 1
+    lead: >-
+      The “Galácticos” policy was Florentino Pérez’s strategy of signing one or more globally
+      famous, exceptionally talented players to strengthen Real Madrid’s team and expand its
+      worldwide profile. It combined sporting ambition with commercial and marketing goals.
+    body: >-
+      <p>Florentino Pérez introduced the policy during his first presidency, beginning in 2000. The
+      idea was to make Real Madrid a team built around internationally recognized superstars, while
+      also using their fame to increase the club’s commercial appeal and global
+      visibility.</p><p>The policy had two connected aims:</p><ul><li><strong>Sporting:</strong> add
+      elite players capable of deciding major matches and competing for the biggest
+      trophies.</li><li><strong>Commercial:</strong> attract worldwide attention, supporters,
+      sponsorships, broadcasting interest, and merchandise sales.</li></ul><p>This approach differed
+      from relying mainly on gradual squad development or lesser-known signings. It treated marquee
+      transfers as both football investments and major global-brand decisions. Pérez also expected
+      the club’s prestige and revenues to help support these ambitious acquisitions.</p><p>The term
+      is most closely associated with Pérez’s first spell as president, although the broader idea of
+      signing high-profile stars continued in later periods. It should not be reduced simply to
+      “buying famous players”: the policy was a deliberate attempt to link sporting excellence,
+      celebrity appeal, and Real Madrid’s international growth.</p><div class="box trap"><b
+      class="t">Common trap</b><p>Do not describe it as a formal competition rule or a fixed
+      transfer plan. It was a club strategy, and its sporting results were mixed rather than
+      automatically successful.</p></div>
+  '3.4':
+    question: >-
+      How did the club navigate the transition from the 'Quinta del Buitre' era to the early years
+      of the Florentino Pérez presidency?
+    status: ok
+    rounds: 1
+    lead: >-
+      Real Madrid moved from a home-grown, tightly knit Quinta del Buitre core toward a more
+      international and commercially ambitious squad. The transition was gradual: veterans and
+      academy products, especially Raúl and other established leaders, remained important while the
+      club changed coaches, refreshed its squad, and then adopted Florentino Pérez’s star-driven
+      model.
+    body: >-
+      <p>The Quinta del Buitre’s peak was the run of five consecutive La Liga titles from the
+      mid-1980s through 1990. Once that generation aged or moved on, Madrid had to rebuild its
+      sporting identity. The club retained continuity through figures such as Raúl, Fernando Hierro,
+      Roberto Carlos, and Fernando Redondo, while bringing in new talent and changing coaches as it
+      searched for a stable successor to the Quinta.</p><p>The transition was not simply a decline.
+      Madrid won the European Cup in 1998 under Jupp Heynckes and again in 2000 under Vicente del
+      Bosque, demonstrating that the club could combine experienced leaders with a changing squad.
+      Florentino Pérez then became president in 2000 and inherited a team that was already
+      competitive, but he pursued a stronger commercial and global strategy alongside sporting
+      renewal.</p><ul><li><strong>Continuity:</strong> established leaders and academy graduates
+      helped preserve Madrid’s identity during the squad turnover.</li><li><strong>Renewal:</strong>
+      the club increasingly recruited internationally recognized talent and refreshed its midfield,
+      attack, and defensive options.</li><li><strong>Early validation:</strong> Madrid won La Liga
+      in 2001 and 2003 and the Champions League in 2002 during Pérez’s early
+      presidency.</li><li><strong>Underlying tension:</strong> the club had to balance star
+      recruitment and commercial growth with tactical cohesion, squad depth, and coaching
+      authority.</li></ul><p>The dismissal of Del Bosque after the 2002–03 season symbolized that
+      tension: Pérez’s project was becoming more than a continuation of the old team, and the club
+      was still working out how presidential strategy, sporting management, and squad balance should
+      coexist.</p>
+  '4.3':
+    question: >-
+      How has Real Madrid adapted to the modern era of football, particularly in terms of
+      commercialization and global reach?
+    status: ok
+    rounds: 1
+    lead: >-
+      Real Madrid adapted by turning its historic sporting identity into a global media and
+      commercial brand, expanding international sponsorships, merchandising, digital content, and
+      worldwide fan engagement. That revenue has supported squad investment while the club has
+      continued modernizing its stadium, communications, and business operations.
+    body: >-
+      <p>Real Madrid’s modern adaptation has been both commercial and
+      organizational:</p><ul><li><strong>Global brand building:</strong> The club markets its
+      history, colours, stadium, and star players to supporters far beyond Spain. International
+      tours, overseas partnerships, and official digital channels help maintain that
+      connection.</li><li><strong>Diversified revenue:</strong> In addition to match-day income,
+      Madrid earns from broadcasting distributions, sponsorships, licensing, merchandising,
+      hospitality, and commercial experiences. This reduces reliance on ticket sales
+      alone.</li><li><strong>Digital engagement:</strong> The club uses its website, social
+      platforms, video content, and multilingual communication to reach fans directly and make them
+      part of the club’s daily story, not just match-day spectators.</li><li><strong>Stadium and
+      match-day modernization:</strong> The Santiago Bernabéu has been developed as a more flexible
+      commercial and entertainment venue, intended to generate activity beyond regular
+      fixtures.</li><li><strong>Global sporting visibility:</strong> Success in major competitions
+      reinforces the brand, while famous players attract new audiences and strengthen sponsorship
+      and merchandise appeal.</li></ul><p>This model creates a feedback loop: sporting success
+      increases worldwide attention, commercial growth provides resources for sporting and
+      infrastructure investment, and both strengthen the club’s international position. It also
+      brings pressure to protect the club’s identity and avoid letting commercial priorities
+      outweigh sporting performance or supporter experience.</p><div class="box trap"><b
+      class="t">Common trap</b><p>Do not describe globalization as simply “buying famous players.”
+      It also involves media distribution, partnerships, digital communities, stadium use,
+      merchandising, and professional commercial management.</p></div>
+  '4.4':
+    question: >-
+      Analyze the success and criticisms of the 'Galácticos' approach, considering both sporting and
+      financial aspects.
+    status: ok
+    rounds: 1
+    lead: >-
+      The Galácticos strategy turned star power into sporting quality, commercial growth, and a
+      worldwide brand, but it was not automatically a winning team-building model. Its main weakness
+      was that individual prestige could outpace squad balance, tactical cohesion, and investment in
+      less glamorous positions.
+    body: >-
+      <p>The approach, associated especially with Florentino Pérez’s first presidency, pursued at
+      least one globally recognisable star while using that visibility to expand Real Madrid’s
+      commercial value. The sporting logic was that elite talent would raise the team’s quality; the
+      business logic was that famous players could attract sponsors, supporters, international
+      audiences, merchandise sales, and media attention.</p><p><strong>Sporting
+      successes:</strong></p><ul><li>The policy brought exceptional technical quality and decisive
+      individual talent into the squad.</li><li>It contributed to major domestic success and a
+      Champions League triumph early in the era.</li><li>It strengthened the club’s ability to
+      compete for the best players and increased its global prestige.</li></ul><p><strong>Financial
+      and strategic benefits:</strong> Star signings were expensive, but their value was not limited
+      to transfer performance. They could increase commercial revenue, strengthen sponsorship
+      negotiations, support international tours, and make the Real Madrid brand more visible
+      worldwide. In that sense, a transfer could be judged partly as a sporting investment and
+      partly as a marketing investment.</p><p><strong>Criticisms:</strong></p><ul><li>The focus on
+      headline names could produce an unbalanced squad, especially if recruitment neglected
+      defensive depth, midfield structure, or continuity.</li><li>Different stars did not
+      necessarily complement one another, and frequent changes could make it harder for coaches to
+      establish a coherent system.</li><li>High wages and transfer fees increased financial
+      pressure, particularly when sporting results did not justify the spending.</li><li>The policy
+      could undervalue youth development and less famous players, even though those players are
+      often essential to a sustainable squad.</li></ul><p>Overall, the Galácticos model succeeded
+      brilliantly as a brand-building strategy and intermittently as a sporting one. Its later
+      lesson was that superstar talent works best when combined with squad balance, recruitment
+      planning, coaching stability, and financial discipline.</p><div class="box trap"><b
+      class="t">Common trap</b><p>Do not call the policy simply a failure because some seasons
+      underperformed. Separate its commercial success from its uneven sporting results.</p></div>
+  '4.2':
+    question: Who were some of the most prominent players signed during the 'Galácticos' era?
+    status: ok
+    rounds: 2
+    lead: >-
+      The most prominent Galácticos were Luís Figo, Zinedine Zidane, Ronaldo Nazário, and David
+      Beckham. Later high-profile additions included Michael Owen and Robinho, although the term is
+      most strongly associated with the first four superstars.
+    body: >-
+      <p>Florentino Pérez’s Galácticos strategy centered on signing a globally recognized star,
+      often from another major club, each summer. The principal signings
+      were:</p><ul><li><strong>Luís Figo</strong> — signed from Barcelona in 2000, making the
+      transfer especially controversial and symbolically significant.</li><li><strong>Zinedine
+      Zidane</strong> — arrived from Juventus in 2001 and became the creative centerpiece of the
+      team.</li><li><strong>Ronaldo Nazário</strong> — joined from Inter Milan in 2002 after
+      recovering from serious knee injuries and quickly became one of the world’s most prolific
+      strikers.</li><li><strong>David Beckham</strong> — signed from Manchester United in 2003,
+      bringing elite crossing and set-piece ability as well as enormous global commercial
+      appeal.</li></ul><p>These four are generally regarded as the defining Galácticos. The club
+      also recruited other famous players during the broader period, including Michael Owen from
+      Liverpool and Robinho from Santos. The signings were notable not only for their footballing
+      quality but also for their international fame, marketing value, and ability to expand Real
+      Madrid’s global audience.</p>
