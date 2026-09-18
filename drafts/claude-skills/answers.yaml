@@ -1,0 +1,472 @@
+# Answers cache for the topic pipeline. Edit the plan, not this file.
+answers:
+  '1.1':
+    question: What are the primary categories of tasks Claude is designed to excel at?
+    status: ok
+    rounds: 1
+    lead: >-
+      Claude is primarily designed for language-centered work: understanding instructions and text,
+      generating and transforming content, analyzing information, reasoning through problems, and
+      assisting with code and conversational tasks. Its strongest results come when the goal,
+      context, and desired output are clearly specified.
+    body: >-
+      <p>Claude’s main task categories are:</p><ul><li><strong>Language understanding:</strong>
+      interpreting questions, documents, conversations, and instructions, including extracting key
+      points or relationships.</li><li><strong>Text generation and transformation:</strong>
+      drafting, rewriting, editing, translating, organizing, and adapting text to a requested
+      audience, tone, or format.</li><li><strong>Analysis and synthesis:</strong> comparing
+      information, identifying themes, classifying material, and combining details into a coherent
+      answer.</li><li><strong>Reasoning and problem solving:</strong> working through structured
+      questions, evaluating alternatives, and helping break complicated goals into manageable
+      steps.</li><li><strong>Programming assistance:</strong> explaining code, suggesting
+      implementations, finding likely defects, and helping reason about technical
+      designs.</li><li><strong>Interactive assistance:</strong> acting as a conversational partner
+      for planning, question answering, tutoring, and task support.</li></ul><p>These are
+      capabilities rather than guarantees. Performance depends on the quality and completeness of
+      the input, the complexity of the task, and the need for current or specialized information.
+      Claude can produce a useful first pass across these categories, but important outputs should
+      be checked against authoritative sources, tests, or subject-matter expertise.</p>
+  '1.2':
+    question: What are some common limitations or areas where Claude might struggle?
+    status: ok
+    rounds: 1
+    lead: >-
+      Claude can produce confident but incorrect answers, struggle with ambiguous or very complex
+      reasoning, and lack current or specialized information unless it has appropriate tools or
+      context. It also cannot replace expert judgment, verification, or appropriate safety and
+      privacy controls.
+    body: >-
+      <p>Common limitations include:</p><ul><li><strong>Hallucinations:</strong> Claude may invent
+      facts, citations, quotations, or plausible-looking details, especially when information is
+      missing or the request implies that an answer must exist.</li><li><strong>Reasoning and
+      precision:</strong> It can make mistakes in long chains of logic, edge cases, exact
+      calculations, or code. Important outputs should be tested, checked, or reproduced
+      independently.</li><li><strong>Limited context:</strong> Very large inputs can exceed the
+      model's context capacity, and relevant details can be overlooked when a prompt is crowded or
+      poorly organized.</li><li><strong>Currency and specialization:</strong> Its answer may not
+      reflect recent events or private organizational knowledge unless the needed information is
+      supplied or an applicable tool is connected. Tool availability and behavior depend on the
+      product and model.</li><li><strong>Ambiguity:</strong> If requirements are underspecified, it
+      may choose a reasonable interpretation that is not the one the user
+      intended.</li><li><strong>Safety boundaries:</strong> It may refuse, qualify, or limit
+      assistance for harmful or sensitive requests; these safeguards can sometimes feel overcautious
+      in legitimate edge cases.</li></ul><p>For high-impact work, treat Claude as an assistant:
+      provide authoritative context, ask it to state uncertainty, and verify important claims and
+      actions with a qualified human or reliable source.</p><div class="box trap"><b
+      class="t">Common trap</b><p>Fluent prose is not evidence of correctness. Confidence, detail,
+      and a citation-like format do not guarantee that the underlying claim is true.</p></div>
+  '2.1':
+    question: What are the key components of a well-structured prompt for Claude?
+    status: ok
+    rounds: 1
+    lead: >-
+      A strong prompt states the objective first, supplies the context Claude needs, and defines
+      constraints and the desired output format. It should be specific enough to make success
+      measurable without adding irrelevant detail.
+    body: >-
+      <p>A well-structured prompt usually contains these
+      components:</p><ul><li><strong>Objective:</strong> Say exactly what Claude should accomplish,
+      using a clear action such as <em>classify</em>, <em>summarize</em>, <em>compare</em>, or
+      <em>draft</em>.</li><li><strong>Context:</strong> Provide the background, source material,
+      audience, and any definitions Claude needs. Separate reference material from the instructions
+      so their roles are clear.</li><li><strong>Requirements and constraints:</strong> Specify
+      scope, tone, length, required details, exclusions, and how uncertainty should be
+      handled.</li><li><strong>Output format:</strong> Describe the structure Claude should return,
+      such as headings, bullets, a table, or a JSON object. State which fields are
+      required.</li><li><strong>Success criteria:</strong> Explain what makes the result useful—for
+      example, accurate, concise, actionable, or supported by the supplied text.</li></ul><p>For
+      example:</p><pre><code>Summarize the policy below for new employees.<br><br>Requirements:<br>-
+      Use plain language.<br>- Keep it under 150 words.<br>- Include the three required
+      actions.<br>- If the policy is unclear, flag the ambiguity.<br><br>Return: a short heading
+      followed by bullet points.<br><br>Policy:<br>...</code></pre><div class="box tip"><b
+      class="t">Strong phrasing</b><p>Put the most important instruction near the beginning, use
+      concrete wording, and make the requested format explicit. A prompt should guide the task, not
+      merely describe a desired impression.</p></div>
+  '1.3':
+    question: How does Claude's training data influence its responses and potential biases?
+    status: ok
+    rounds: 1
+    lead: >-
+      Claude’s responses reflect patterns, facts, and perspectives present in its training data,
+      filtered through later alignment and safety training. Because that data is incomplete and
+      socially uneven, Claude can reproduce omissions, stereotypes, or dominant viewpoints rather
+      than provide a perfectly neutral view.
+    body: >-
+      <p>Training gives Claude a broad statistical model of language and information; it does not
+      make the model an impartial database. The training mixture can include publicly available,
+      licensed, and human-created material, depending on the model and provider. Its composition
+      influences which topics, languages, perspectives, and writing styles are well
+      represented.</p><ul><li><strong>Coverage:</strong> frequently documented subjects may produce
+      fluent, useful answers, while obscure, recent, local, or underrepresented topics may receive
+      weaker or incomplete treatment.</li><li><strong>Framing:</strong> recurring assumptions in the
+      data can affect how Claude describes people, events, professions, or disputed
+      issues.</li><li><strong>Bias:</strong> historical stereotypes or imbalances can be reproduced,
+      even when no harmful intent is present. Alignment and safety training can reduce some
+      patterns, but they do not remove bias entirely.</li><li><strong>Freshness:</strong> training
+      is performed at particular points in time, so Claude should not be assumed to know later
+      developments unless the product provides a separate current-information
+      capability.</li><li><strong>Reliability:</strong> fluent wording is not proof that a claim
+      came directly from a source or is correct; Claude can combine learned patterns into an
+      unsupported answer.</li></ul><p>For sensitive or consequential work, ask for multiple
+      perspectives, define relevant criteria, request uncertainty and supporting sources where
+      appropriate, and verify important claims against authoritative, current material. Human review
+      remains necessary, especially when an answer could affect people from underrepresented
+      groups.</p><div class="box trap"><b class="t">Common trap</b><p>Do not describe Claude as
+      either completely objective or simply repeating its training data. Its output is shaped by
+      training data, post-training behavior, the prompt, and the current conversation.</p></div>
+  '2.2':
+    question: >-
+      How can providing examples (few-shot learning) improve Claude's performance on a specific
+      task?
+    status: ok
+    rounds: 1
+    lead: >-
+      Few-shot examples show Claude exactly what a successful input and output look like, reducing
+      ambiguity about the task, format, tone, and level of detail. A small set of representative,
+      consistent examples can make responses more accurate and predictable.
+    body: >-
+      <p>Few-shot prompting improves performance by turning an abstract instruction into a concrete
+      pattern. Each example demonstrates how to interpret the input and how to produce the desired
+      output, including details that are difficult to describe precisely, such as tone, structure,
+      labels, or borderline cases.</p><ul><li><strong>Show the transformation:</strong> provide an
+      input followed by the ideal answer.</li><li><strong>Make the format obvious:</strong> use
+      consistent delimiters or headings so Claude can distinguish examples from the new
+      task.</li><li><strong>Choose representative examples:</strong> include common cases and, when
+      useful, an important edge case.</li><li><strong>Keep examples consistent:</strong> conflicting
+      examples can make the intended rule unclear.</li></ul><pre><code>Classify each message as
+      "positive" or "negative".
+
+
+      Message: "The support was quick and helpful."
+
+      Classification: positive
+
+
+      Message: "The product arrived damaged."
+
+      Classification: negative
+
+
+      Message: "The setup was easy and the results are reliable."
+
+      Classification:</code></pre><p>Claude can infer both the classification rule and the expected
+      concise output. Examples do not guarantee correctness, so they should be accurate,
+      unambiguous, and close to the real inputs the model will receive.</p><div class="box trap"><b
+      class="t">Common trap</b><p>Adding many examples is not automatically better. Irrelevant,
+      low-quality, or inconsistent examples can distract Claude or teach the wrong
+      pattern.</p></div>
+  '2.3':
+    question: Describe the difference between explicit instructions and implicit guidance in a prompt.
+    status: ok
+    rounds: 1
+    lead: >-
+      Explicit instructions state directly what Claude should do and what the output must contain,
+      while implicit guidance shapes its interpretation through context, tone, examples, or a stated
+      role. Use explicit wording for requirements that must be reliable; treat implicit signals as
+      softer cues.
+    body: >-
+      <p><strong>Explicit instructions</strong> are direct, observable requirements. They specify
+      the task, audience, scope, format, constraints, or success criteria—for example, “Summarize
+      this report in five bullet points for a technical manager.” Claude can check its response
+      against those requirements.</p><p><strong>Implicit guidance</strong> is inferred rather than
+      directly commanded. It can come from the surrounding context, the role assigned to Claude, the
+      wording and tone of the prompt, examples, or the order in which information is presented. For
+      example, asking Claude to act as a “careful copy editor” implicitly suggests attention to
+      grammar, consistency, and preserving the author’s meaning, even if those behaviors are not
+      listed separately.</p><p>Implicit guidance is useful for establishing tone and priorities, but
+      it is less predictable: Claude may infer it differently than the writer intended. A robust
+      prompt makes important expectations explicit and uses context to reinforce
+      them.</p><pre><code>Act as a concise technical editor.          // contextual guidance
+
+      Rewrite the paragraph for software engineers.  // explicit task
+
+      Return exactly three bullet points.             // explicit format
+
+      Preserve all technical claims.                 // explicit constraint</code></pre><div
+      class="box trap"><b class="t">Common trap</b><p>Do not assume that a role or friendly tone
+      communicates every requirement. If correctness, format, exclusions, or evaluation criteria
+      matter, state them directly.</p></div>
+  '2.4':
+    question: How can you use negative constraints in a prompt to steer Claude away from certain outputs?
+    status: ok
+    rounds: 1
+    lead: >-
+      Use negative constraints to explicitly define what Claude must avoid, then pair each
+      restriction with a positive alternative—for example, “do not invent sources; say when evidence
+      is unavailable.” This reduces ambiguity, though important constraints should be clear,
+      prioritized, and reinforced by the requested output format.
+    body: >-
+      <p>Negative constraints steer Claude by identifying unacceptable content, style, or behavior.
+      They work best when they are <strong>specific, observable, and paired with a
+      replacement</strong>. Instead of saying “don’t be verbose,” say “answer in three bullet
+      points, with no introduction.” Instead of “don’t hallucinate,” say “use only the information
+      provided; if it is missing, state that you cannot determine the answer.”</p><ul><li>State the
+      restriction directly: “Do not include personal data.”</li><li>Define its scope: “Do not
+      include personal data from the input in the final response.”</li><li>Describe the preferred
+      behavior: “Replace names with role labels such as <code>[customer]</code>.”</li><li>Specify
+      the format that makes compliance easy to check, such as a word limit, headings, or an allowed
+      list of fields.</li><li>Prioritize constraints when they could conflict: accuracy and safety
+      should take precedence over style preferences.</li></ul><p>A practical prompt might
+      be:</p><pre><code>Summarize the passage in four bullet points.<br>Do not add facts that are
+      not in the passage.<br>Do not quote more than eight consecutive words.<br>If the passage does
+      not support a claim, write “Not stated.”</code></pre><div class="box trap"><b class="t">Common
+      trap</b><p>Negative wording is not a perfect filter. Vague prohibitions, long lists of
+      exceptions, or mentioning an unwanted output repeatedly can make the instruction harder to
+      follow. Keep constraints concise, explain the desired alternative, and verify the result when
+      compliance matters.</p></div>
+  '3.1':
+    question: Explain the concept of 'chain-of-thought' prompting and why it can be beneficial.
+    status: ok
+    rounds: 1
+    lead: >-
+      Chain-of-thought prompting asks Claude to work through a problem in ordered steps before
+      giving an answer. It can improve performance on multi-step tasks by making intermediate
+      assumptions and calculations easier to track, though the final response should usually expose
+      only the useful conclusion or a concise rationale.
+    body: >-
+      <p>Chain-of-thought prompting is a technique that encourages a model to decompose a problem
+      into smaller steps, apply them in sequence, and then produce an answer. For example, instead
+      of asking only for a result, a prompt might say:</p><pre><code>Determine which option is best.
+      First identify the relevant constraints, then compare the options, and finally give the
+      recommendation with a brief justification.</code></pre><p>This can help with tasks involving
+      several conditions, transformations, calculations, or decisions because it reduces the chance
+      that the model will skip an important step. It also gives the model a clearer procedure to
+      follow and can make errors easier to diagnose during testing.</p><p>It is not a guarantee of
+      correctness: a model can produce a coherent-looking sequence that contains a false assumption.
+      The prompt should therefore define the task, constraints, and desired output, and important
+      results should still be checked. In production, ask for the final answer and a concise,
+      relevant explanation rather than assuming that a long visible reasoning trace is necessary.
+      Depending on the model and task, structured intermediate outputs—such as a checklist, table,
+      or set of stated assumptions—may be more useful and safer than requesting private internal
+      reasoning.</p><div class="box trap"><b class="t">Common trap</b><p>“Think step by step” does
+      not replace precise instructions or verification. It encourages a process, but it cannot make
+      uncertain facts or faulty premises reliable.</p></div>
+  '3.2':
+    question: >-
+      How can you effectively use role-playing within a prompt to shape Claude's persona and output
+      style?
+    status: ok
+    rounds: 1
+    lead: >-
+      Use role-playing as a concise framing device: define who Claude should act as, who it is
+      addressing, and what that role should prioritize. Pair the persona with explicit task,
+      audience, tone, and output constraints, because a role influences style and perspective but
+      does not reliably create real-world authority or special knowledge.
+    body: >-
+      <p>A useful role prompt has four parts:</p><ul><li><strong>Persona:</strong> state a relevant
+      identity, such as “act as a patient technical editor” or “act as a skeptical security
+      reviewer.”</li><li><strong>Objective:</strong> explain the task and what a successful answer
+      must accomplish.</li><li><strong>Audience and style:</strong> specify the reader’s expertise,
+      tone, level of detail, and terminology.</li><li><strong>Boundaries and format:</strong>
+      identify what to include or avoid, then require a concrete structure such as headings,
+      bullets, or a review table.</li></ul><p>For example:</p><pre><code>Act as a pragmatic API
+      design reviewer.<br>Review the proposal for usability, backward compatibility,<br>and failure
+      handling. Write for experienced engineers.<br>List the three highest-risk issues first,
+      explain each briefly,<br>and end with specific recommendations. Do not rewrite the
+      proposal.</code></pre><p>Roles work best when they are relevant to the task and expressed as
+      behaviors rather than impressive credentials. “Be skeptical, precise, and evidence-oriented”
+      is often more useful than claiming the model is a world-leading expert. You can also ask
+      Claude to maintain the role throughout the response and to state assumptions when information
+      is missing.</p><div class="box trap"><b class="t">Common trap</b><p>A persona is not a
+      substitute for requirements or verification. It can shape perspective, vocabulary, and tone,
+      but it does not grant private knowledge, professional authority, or permission to ignore
+      higher-priority instructions.</p></div>
+  '3.3':
+    question: What strategies can be employed to handle complex, multi-step reasoning tasks with Claude?
+    status: ok
+    rounds: 1
+    lead: >-
+      For complex tasks, decompose the goal into explicit stages, give Claude the inputs and success
+      criteria for each stage, and make it produce structured intermediate artifacts. Then add a
+      separate review pass that checks the result against requirements, edge cases, and source
+      evidence before asking for the final answer.
+    body: >-
+      <p>Treat a multi-step task as a small workflow rather than one large instruction. First define
+      the final deliverable and acceptance criteria. Then split the work into stages with clear
+      inputs and outputs—for example: extract facts, classify them, draft a solution, test it
+      against edge cases, and format the result.</p><ul><li><strong>Use structured
+      artifacts:</strong> Ask for a requirements list, decision table, outline, checklist, or
+      proposed plan. These make omissions visible and give later stages something concrete to
+      use.</li><li><strong>Separate planning from execution:</strong> Have Claude propose a plan
+      first, allow corrections, then execute the approved plan. For long tasks, provide only the
+      relevant artifact from each prior stage rather than repeatedly pasting the entire
+      conversation.</li><li><strong>Make dependencies explicit:</strong> State what must be
+      completed before a later step and what to do when information is missing. Requiring “unknown”
+      or “needs verification” is safer than encouraging guesses.</li><li><strong>Add
+      verification:</strong> Use an independent review pass to compare the draft with the
+      requirements, check calculations or code against examples, identify unsupported claims, and
+      list unresolved risks. For factual or operational work, ground the process in supplied
+      documents or reliable tools.</li><li><strong>Control the output contract:</strong> Specify the
+      schema, length, audience, and failure behavior so the final stage can reliably consume the
+      result.</li></ul><pre><code>1. Extract requirements into a checklist.
+
+      2. Propose an implementation plan and assumptions.
+
+      3. Produce the draft using that checklist.
+
+      4. Review the draft for omissions, edge cases, and unsupported claims.
+
+      5. Return the corrected result plus unresolved issues.</code></pre><div class="box trap"><b
+      class="t">Common trap</b><p>Do not rely on an unstructured request to “think through
+      everything.” Ask for concise plans, decisions, evidence, and checks instead; the goal is
+      reliable intermediate results, not an unnecessarily long hidden reasoning
+      transcript.</p></div>
+  '4.1':
+    question: Provide examples of how Claude can be used for content generation and summarization.
+    status: ok
+    rounds: 1
+    lead: >-
+      Claude can generate first drafts such as emails, articles, product descriptions, scripts, and
+      reports, while matching a requested audience and tone. It can also summarize long documents,
+      meetings, or research into concise overviews, key points, decisions, and action items.
+    body: >-
+      <p>For <strong>content generation</strong>, Claude can turn a brief into a structured first
+      draft. Examples include:</p><ul><li>Writing blog posts, newsletters, social posts, product
+      descriptions, and marketing copy.</li><li>Drafting emails, proposals, reports, FAQs, and
+      presentation outlines.</li><li>Rewriting existing text for a different audience, tone, reading
+      level, or length.</li><li>Expanding a rough outline into organized sections while following
+      formatting requirements.</li></ul><p>For <strong>summarization</strong>, Claude can condense
+      supplied material while preserving the information the user prioritizes. A request might ask
+      for a short executive summary, a section-by-section outline, key decisions from meeting notes,
+      or action items with owners and deadlines. It can also compare multiple provided documents and
+      summarize areas of agreement or difference.</p><p>Results improve when the prompt identifies
+      the audience, purpose, desired length, tone, output structure, and what to preserve or omit.
+      For example, asking for “five bullet points for a nontechnical manager, followed by open
+      questions” is more useful than simply asking to “summarize this.” Generated content should
+      still be reviewed for accuracy, especially when the source is incomplete or the output will be
+      published.</p><div class="box trap"><b class="t">Common trap</b><p>A summary is not
+      automatically a fact check. Claude may produce a clear, plausible draft or summary while
+      missing context, so important claims should be checked against the source material.</p></div>
+  '3.4':
+    question: >-
+      How can you debug or troubleshoot a situation where Claude is not producing the desired
+      output, despite a seemingly good prompt?
+    status: ok
+    rounds: 1
+    lead: >-
+      Debug it like an experiment: compare the requested behavior with the actual output, isolate
+      the smallest failing prompt, and remove ambiguity one variable at a time. Then clarify the
+      task, output contract, examples or input boundaries, and verify that context, model settings,
+      and safety constraints are not working against the instruction.
+    body: >-
+      <p>Start by defining what “desired output” means in observable terms: required facts,
+      structure, tone, exclusions, and success criteria. Save the exact prompt, conversation
+      history, inputs, model configuration, and output; small contextual differences can
+      matter.</p><ol><li><strong>Reproduce minimally.</strong> Remove unrelated instructions, old
+      turns, tools, and excess context. Test whether the problem is consistent or depends on a
+      particular input.</li><li><strong>Check instruction clarity.</strong> Put the primary task
+      first, use unambiguous verbs, define important terms, and resolve conflicts between
+      instructions. State priority when requirements compete.</li><li><strong>Inspect
+      boundaries.</strong> Clearly delimit source material from instructions, especially when the
+      input contains text that looks like commands. Specify what Claude should do with missing,
+      invalid, or conflicting information.</li><li><strong>Make the output contract
+      testable.</strong> Give the exact format, required fields, allowed values, length, and
+      handling of uncertainty. If parsing the result, request only that format and validate it
+      automatically.</li><li><strong>Test incrementally.</strong> Change one element at a time: the
+      instruction, an example, the input, or generation settings. Try representative easy, typical,
+      and adversarial cases rather than judging from one response.</li><li><strong>Check external
+      causes.</strong> Confirm that relevant context fits within the available context window, the
+      intended model and settings are being used, and no application layer truncates, alters, or
+      appends the prompt. Review refusals separately from ordinary instruction-following
+      failures.</li></ol><div class="box trap"><b class="t">Common trap</b><p>Adding more prose is
+      not automatically a fix. A shorter prompt with explicit priorities, delimited data, and a
+      verifiable output schema is often easier for both Claude and the engineer to follow.</p></div>
+  '4.2':
+    question: How can Claude assist in brainstorming and idea generation processes?
+    status: ok
+    rounds: 1
+    lead: >-
+      Claude can act as a structured brainstorming partner: generate many alternatives, explore
+      different perspectives, challenge assumptions, and then organize ideas against explicit
+      criteria. The strongest results come from iterating—first favor breadth, then ask Claude to
+      compare, refine, and turn the best ideas into actionable next steps.
+    body: >-
+      <p>Use Claude in stages rather than asking for one “brilliant idea.” Start by describing the
+      goal, audience, constraints, and what has already been tried. Ask for a broad set of distinct
+      possibilities, including unconventional options. Then change the mode of evaluation: have
+      Claude group similar ideas, identify assumptions, point out risks, and rank or score the
+      options against criteria such as value, feasibility, cost, and differentiation.</p><p>Useful
+      brainstorming patterns include:</p><ul><li><strong>Perspective shifts:</strong> ask how a
+      customer, competitor, beginner, or domain expert might approach the
+      problem.</li><li><strong>Constraint changes:</strong> ask what could work with no budget, a
+      very short timeline, or existing resources only.</li><li><strong>Combination:</strong> ask
+      Claude to merge promising ideas into stronger concepts.</li><li><strong>Execution:</strong>
+      request an experiment, outline, prototype plan, or first small step for the leading
+      option.</li></ul><p>Keep ownership of the judgment. Claude can produce volume and useful
+      connections, but its ideas may be generic, impractical, or based on assumptions that need
+      checking. Supplying feedback between rounds—such as “these three are promising, but the
+      solution must work without collecting personal data”—makes the next generation more
+      relevant.</p><div class="box tip"><b class="t">Strong phrasing</b><p>Ask for “20 meaningfully
+      different options, grouped by approach, followed by the assumptions, risks, and cheapest test
+      for the top three.”</p></div>
+  '4.3':
+    question: >-
+      Discuss the ethical considerations and best practices when using Claude for sensitive tasks
+      like coding assistance or legal text review.
+    status: ok
+    rounds: 1
+    lead: >-
+      Use Claude as a supervised assistant, not an authority: protect confidential information,
+      verify every consequential output, and keep a qualified human accountable. For coding and
+      legal review, apply least-privilege access, clear disclosure, testing or source checking, and
+      documented approval before anything is relied on or deployed.
+    body: >-
+      <p>Ethical use starts with <strong>purpose and authorization</strong>. Confirm that the user
+      is allowed to share the material and that using an AI system is appropriate for the task.
+      Minimize the data sent: remove unnecessary personal information, client identifiers,
+      credentials, proprietary code, and privileged or confidential content unless the organization
+      has explicitly approved that workflow and its protections.</p><ul><li><strong>Keep humans
+      accountable.</strong> Claude can draft, explain, compare, or flag issues, but a qualified
+      person must make legal judgments, approve advice, merge code, or authorize an action. Do not
+      present generated text as professional legal advice or verified
+      analysis.</li><li><strong>Verify consequential claims.</strong> For legal text, check
+      quotations, citations, definitions, jurisdiction, dates, exceptions, and the source document.
+      Ask for uncertainty and missing information to be surfaced rather than treating fluent
+      language as evidence.</li><li><strong>Use secure engineering practice.</strong> Treat
+      generated code as untrusted code: review it, run tests and static analysis, check dependencies
+      and licenses, inspect for vulnerabilities, and avoid giving it production credentials or
+      unrestricted execution access.</li><li><strong>Manage fairness and transparency.</strong> Test
+      outputs for unequal treatment or misleading assumptions, especially where people may be
+      affected. Tell stakeholders when AI materially contributed, preserve relevant prompts and
+      source versions where appropriate, and provide a route for human correction or
+      appeal.</li><li><strong>Control the workflow.</strong> Define allowed use, retention, access,
+      escalation, and incident-reporting rules. Prefer reversible drafts and staged review over
+      autonomous changes to records, contracts, or systems.</li></ul><div class="box trap"><b
+      class="t">Common trap</b><p>“A lawyer or engineer will glance at it” is not a sufficient
+      control. The reviewer needs the original sources, enough context to challenge the output, and
+      real authority to reject or revise it.</p></div>
+  '4.4':
+    question: >-
+      What are the challenges and opportunities in using Claude for creative writing or complex
+      problem-solving scenarios?
+    status: ok
+    rounds: 1
+    lead: >-
+      Claude is most valuable as a creative collaborator and reasoning partner: it can generate
+      alternatives, develop structure, expose assumptions, and synthesize complex material quickly.
+      The main challenges are preserving an authentic human voice, avoiding plausible but
+      unsupported content, and verifying conclusions rather than treating fluent output as proof.
+    body: >-
+      <p>In <strong>creative writing</strong>, Claude can help with premise development, character
+      and world consistency, scene alternatives, dialogue revisions, pacing feedback, and
+      transformations between tones or formats. It is especially useful for rapid iteration: a
+      writer can compare several versions, identify weak transitions, or ask for an editorial
+      critique while retaining final control over the work. The opportunity is not simply automated
+      writing, but a low-cost collaborator that makes exploration and revision faster.</p><p>The
+      risks are equally important. Generic patterns can make prose feel derivative, and a requested
+      style may be imitated too literally or flatten the writer’s distinctive voice. Generated
+      details can also introduce continuity errors, clichés, or invented facts. The writer should
+      therefore treat output as draft material, define what must remain unchanged, and perform a
+      human editorial pass.</p><p>For <strong>complex problem-solving</strong>, Claude can decompose
+      a broad objective into subproblems, compare approaches, translate requirements into a plan,
+      summarize competing evidence, and identify edge cases or unstated assumptions. It can be a
+      useful “second set of eyes,” particularly when the problem benefits from explanation and
+      structured alternatives.</p><p>However, fluent reasoning is not the same as a verified
+      solution. Errors may appear in premises, calculations, interpretations, or dependencies
+      between steps. Important results should be checked against primary sources, tests, domain
+      experts, or an independently derived solution. A strong workflow uses Claude for exploration
+      and critique, then uses external validation and human judgment for acceptance.</p><div
+      class="box trap"><b class="t">Common trap</b><p>Do not measure success by how polished or
+      confident the response sounds. Evaluate whether the output preserves the intended voice or
+      constraints and whether its factual and logical claims can be independently
+      supported.</p></div>

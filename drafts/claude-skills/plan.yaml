@@ -1,0 +1,84 @@
+# Plan for a generated deck. Stop 1: edit freely before answering "y".
+# Change, add or remove questions; tier is Foundational, Intermediate or Deep-dive.
+# New questions need no id. Removing a section renumbers the ones after it.
+deck: claude-skills
+title: Claude Skills
+description: >-
+  A study deck on the capabilities and nuances of interacting with Claude, focusing on effective
+  prompting, understanding its behavior, and leveraging its strengths in various applications.
+sections:
+  - id: s1
+    title: Core Capabilities and Limitations
+    summary: >-
+      Understanding what Claude can do and where its boundaries lie is fundamental for effective
+      use.
+    questions:
+      - id: '1.1'
+        tier: Foundational
+        question: What are the primary categories of tasks Claude is designed to excel at?
+      - id: '1.2'
+        tier: Foundational
+        question: What are some common limitations or areas where Claude might struggle?
+      - id: '1.3'
+        tier: Intermediate
+        question: How does Claude's training data influence its responses and potential biases?
+  - id: s2
+    title: Prompt Engineering Fundamentals
+    summary: Learn the basics of crafting effective prompts to guide Claude's output.
+    questions:
+      - id: '2.1'
+        tier: Foundational
+        question: What are the key components of a well-structured prompt for Claude?
+      - id: '2.2'
+        tier: Foundational
+        question: >-
+          How can providing examples (few-shot learning) improve Claude's performance on a specific
+          task?
+      - id: '2.3'
+        tier: Intermediate
+        question: Describe the difference between explicit instructions and implicit guidance in a prompt.
+      - id: '2.4'
+        tier: Intermediate
+        question: >-
+          How can you use negative constraints in a prompt to steer Claude away from certain
+          outputs?
+  - id: s3
+    title: Advanced Prompting Techniques
+    summary: Explore more sophisticated methods for controlling and refining Claude's behavior.
+    questions:
+      - id: '3.1'
+        tier: Intermediate
+        question: Explain the concept of 'chain-of-thought' prompting and why it can be beneficial.
+      - id: '3.2'
+        tier: Intermediate
+        question: >-
+          How can you effectively use role-playing within a prompt to shape Claude's persona and
+          output style?
+      - id: '3.3'
+        tier: Deep-dive
+        question: What strategies can be employed to handle complex, multi-step reasoning tasks with Claude?
+      - id: '3.4'
+        tier: Deep-dive
+        question: >-
+          How can you debug or troubleshoot a situation where Claude is not producing the desired
+          output, despite a seemingly good prompt?
+  - id: s4
+    title: Applications and Use Cases
+    summary: Discover practical ways to leverage Claude's skills across various domains.
+    questions:
+      - id: '4.1'
+        tier: Foundational
+        question: Provide examples of how Claude can be used for content generation and summarization.
+      - id: '4.2'
+        tier: Intermediate
+        question: How can Claude assist in brainstorming and idea generation processes?
+      - id: '4.3'
+        tier: Deep-dive
+        question: >-
+          Discuss the ethical considerations and best practices when using Claude for sensitive
+          tasks like coding assistance or legal text review.
+      - id: '4.4'
+        tier: Deep-dive
+        question: >-
+          What are the challenges and opportunities in using Claude for creative writing or complex
+          problem-solving scenarios?
